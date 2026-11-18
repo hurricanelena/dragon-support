@@ -1,0 +1,56 @@
+# Publishes Dragon Splashdown Support on GitHub Pages and, every hour, the pre-processed NBM, RRFS-ensemble and
+# Gridded LAMP files next to it. Only the page and public NOAA output are published: never the private settings file.
+name: Site and model data
+on:
+  schedule:
+    - cron: "40 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      GLMP_BOX: ${{ secrets.GLMP_BOX }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Page
+        run: |
+          mkdir -p _site
+          cp dragon_support_index.html _site/
+          printf '<!doctype html><meta http-equiv="refresh" content="0; url=dragon_support_index.html"><a href="dragon_support_index.html">Dragon Splashdown Support</a>' > _site/index.html
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install eccodes
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libeccodes-dev
+          pip install --quiet eccodes numpy
+      - name: NBM and RRFS ensemble
+        continue-on-error: true
+        run: python scripts/grid_build.py --out _site
+      - name: Gridded LAMP
+        continue-on-error: true
+        run: python scripts/glmp_build.py --out _site/glmp
+      - name: Size check
+        run: du -sh _site/* || true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
