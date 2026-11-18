@@ -8,7 +8,7 @@ NOMADS, decodes the GRIB2 with eccodes, crops each field to a box, and writes wh
   glmp/<field>_fPPP.bin.gz     gzip'd little-endian uint16 cells (65535 = missing), rows south -> north
   glmp/inventory.txt           every GRIB message seen (shortName, discipline/category/number, probability limits...)
 
-Fields (units before scaling): cig, vis (m) - wspd, wgst (m/s) - sky, pop, cigp2, visp2 (%).
+Fields (units before scaling): cig, vis (m) - wspd, wgst (m/s) - sky, pop, cigp2, visp2, visp3 (%).
 Deterministic ceiling "unlimited" (-1 / above 12,000 ft) is written as 30,000 m, which the page shows as Unlimited.
 
 The crop box is lon0,lat0,lon1,lat1 from the GLMP_BOX environment variable (set it as a repository secret so the
@@ -37,8 +37,9 @@ FIELDS = {
     "pop":   (0.1,  "1-h PoP (%)"),
     "cigp2": (0.1,  "P(ceiling < 500 ft) (%)"),
     "visp2": (0.1,  "P(visibility < 1 mile) (%)"),
+    "visp3": (0.1,  "P(visibility < 3 miles) (%)"),     # with visp2, lets the page interpolate P(visibility <= 1 NM)
 }
-PROB_TARGET = {"cigp2": 152.4, "visp2": 1609.344}       # metres
+PROB_TARGET = {"cigp2": 152.4, "visp2": 1609.344, "visp3": 4828.03}       # metres
 FCSTS_FILE = {"wspd": "wspd", "wgst": "wgst", "sky": "sky", "cig": "cig", "vis": "vis",
               "cigp2": "cigp2", "visp2": "visp2"}       # whole-run files used only for fields the hourly files lack
 
@@ -227,7 +228,10 @@ def classify(h):
     if d != 0: return None
     p = is_prob(h)
     if (c, n) == (6, 13): return ("cigp2", prob_below(h)) if p else ("cig", None)
-    if (c, n) == (19, 0): return ("visp2", prob_below(h)) if p else ("vis", None)
+    if (c, n) == (19, 0):
+        if not p: return ("vis", None)
+        t = prob_below(h)
+        return ("visp3" if t is not None and abs(t - 4828.03) < 0.15 * 4828.03 else "visp2", t)
     if p:
         if c == 1:
             t = h.get("probabilityType")

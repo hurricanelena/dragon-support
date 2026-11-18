@@ -28,7 +28,9 @@ NBM = dict(
     url=lambda base, ymd, hh, kind, f: f"{base}/blend.{ymd}/{hh}/{kind}/blend.t{hh}z.{kind}.f{f:03d}.co.grib2",
     kinds={
         "core": [r":WIND:10 m above ground:\d+ hour fcst:$", r":CEIL:cloud ceiling:\d+ hour fcst:$",
-                 r":VIS:surface:\d+ hour fcst:$", r":APCP:surface:\d+-\d+ hour acc fcst:prob >0\.254:"],
+                 r":VIS:surface:\d+ hour fcst:$", r":APCP:surface:\d+-\d+ hour acc fcst:prob >0\.254:",
+                 r":TSTM:surface:\d+-\d+ hour acc fcst:", r":CEIL:cloud ceiling:\d+ hour fcst:prob <152\.4:",
+                 r":VIS:surface:\d+ hour fcst:prob <(1609\.34|3218\.69):"],
         "qmd":  [r":WIND:10 m above ground:\d+ hour fcst:ens mean", r":WIND:10 m above ground:\d+ hour fcst:ens std dev"],
     },
     complete=36)
@@ -38,7 +40,8 @@ REFS = dict(
     kinds={
         "eas":  [r":APCP:surface:\d+-\d+ hour acc fcst:prob >0\.254:"],
         "mean": [r":WIND:10 m above ground:\d+ hour fcst:wt ens mean", r":HGT:cloud ceiling:\d+ hour fcst:wt ens mean"],
-        "sprd": [r"1::WIND:10 m above ground:\d+ hour fcst:"],   # "1:" = first match only, as the page's indexOf picks
+        "sprd": [r"1::WIND:10 m above ground:\d+ hour fcst:"],
+        "prob": [r":HGT:cloud ceiling:\d+ hour fcst:prob <152\.4:", r":VIS:surface:\d+ hour fcst:prob <(1600|3200):"],   # "1:" = first match only, as the page's indexOf picks
     },
     complete=48)
 
