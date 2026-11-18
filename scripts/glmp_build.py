@@ -8,7 +8,7 @@ NOMADS, decodes the GRIB2 with eccodes, crops each field to a box, and writes wh
   glmp/<field>_fPPP.bin.gz     gzip'd little-endian uint16 cells (65535 = missing), rows south -> north
   glmp/inventory.txt           every GRIB message seen (shortName, discipline/category/number, probability limits...)
 
-Fields (units before scaling): cig, vis (m) - wspd, wgst (m/s) - t, td (K) - sky, pop, cigp2, visp2 (%).
+Fields (units before scaling): cig, vis (m) - wspd, wgst (m/s) - sky, pop, cigp2, visp2 (%).
 Deterministic ceiling "unlimited" (-1 / above 12,000 ft) is written as 30,000 m, which the page shows as Unlimited.
 
 The crop box is lon0,lat0,lon1,lat1 from the GLMP_BOX environment variable (set it as a repository secret so the
@@ -33,15 +33,13 @@ FIELDS = {
     "vis":   (1.0,  "visibility (m)"),
     "wspd":  (0.01, "10 m wind speed (m/s)"),
     "wgst":  (0.01, "10 m wind gust (m/s)"),
-    "t":     (0.01, "2 m temperature (K)"),
-    "td":    (0.01, "2 m dew point (K)"),
     "sky":   (0.1,  "sky cover (%)"),
     "pop":   (0.1,  "1-h PoP (%)"),
     "cigp2": (0.1,  "P(ceiling < 500 ft) (%)"),
     "visp2": (0.1,  "P(visibility < 1 mile) (%)"),
 }
 PROB_TARGET = {"cigp2": 152.4, "visp2": 1609.344}       # metres
-FCSTS_FILE = {"wspd": "wspd", "wgst": "wgst", "t": "t", "td": "td", "sky": "sky", "cig": "cig", "vis": "vis",
+FCSTS_FILE = {"wspd": "wspd", "wgst": "wgst", "sky": "sky", "cig": "cig", "vis": "vis",
               "cigp2": "cigp2", "visp2": "visp2"}       # whole-run files used only for fields the hourly files lack
 
 
@@ -235,8 +233,7 @@ def classify(h):
             t = h.get("probabilityType")
             return ("pop", limit(h, "Lower") if t == 3 else limit(h, "Upper") if t == 1 else (limit(h, "Lower") or limit(h, "Upper")))
         return None
-    return {(2, 1): ("wspd", None), (2, 22): ("wgst", None), (0, 0): ("t", None), (0, 6): ("td", None),
-            (6, 1): ("sky", None)}.get((c, n))
+    return {(2, 1): ("wspd", None), (2, 22): ("wgst", None), (6, 1): ("sky", None)}.get((c, n))
 
 def valid_time(h):
     d, t = str(h["validityDate"]), int(h["validityTime"])
