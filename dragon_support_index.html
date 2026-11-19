@@ -2644,17 +2644,26 @@
     if (glmpLocalMeta && Date.now() - glmpLocalAt < 10 * 60e3) return glmpLocalMeta;
     glmpLocalAt = Date.now();
     return (glmpLocalMeta = (async () => {
-      for (const b of glmpFilesBases()) { try { const r = await fetch(b + "latest.json", { cache: "no-store" }); if (r.ok) { const m = await r.json(); glmpLocalUrl = b; return m; } } catch (e) {} }
+      for (const b of glmpFilesBases()) { try { const r = await fetch(b + "latest.json", { cache: "no-store" }); if (r.ok) { const m = await r.json(); glmpLocalUrl = b;
+            // the run before it (kept by the workflow in prev/): used when the newest run has no data for an hour
+            try { const rp = await fetch(b + "prev/latest.json", { cache: "no-store" }); if (rp.ok) { const pm = await rp.json(); if (pm && pm.cycle && pm.cycle !== m.cycle) m._prev = pm; } } catch (e) {}
+            return m; } } catch (e) {} }
       glmpLocalAt = 0; return false; })());     // not found: ask again next time
   }
-  // field: cig (m) | vis (m) | wspd (m/s) | pop | cigp2 | visp2 (%). Nearest available hour (±2 h) if the exact one is missing.
+  // field: cig (m) | vis (m) | wspd (m/s) | pop | cigp2 | visp2 (%). Order: the exact hour in the newest run, then the
+  // exact hour in the previous run (prev/), then the nearest hour in the newest run (past its end: its last hour, up to 3 h back).
   async function glmpLocalField(name, vt, exact){
-    const m = await glmpLocalMetaGet(); if (!m || !m.fields[name]) return null;
-    const fd = m.fields[name], cyc = new Date(m.cycle), f0 = Math.round((vt - cyc) / 3.6e6);
-    const last = Math.max(...fd.hours), ord = exact ? (f0 > last ? [-1, -2, -3] : [0]) : [0, 1, -1, 2, -2, -3];
-    const f = ord.map(o => f0 + o).find(x => fd.hours.includes(x));
-    if (f == null) { if (exact) throw new Error(f0 < 1 ? "before this LAMP run" : `more than 3 h past this LAMP run (ends ${last} h)`); return null; }
-    const gz = m.enc === "gzip", url = `${glmpLocalUrl}${name}_f${String(f).padStart(3, "0")}.bin${gz ? ".gz" : ""}`;
+    const m0 = await glmpLocalMetaGet(); if (!m0) return null;
+    const runs = [[m0, glmpLocalUrl], [m0._prev, glmpLocalUrl + "prev/"]].filter(([x]) => x && x.fields[name] && x.fields[name].hours.length);
+    if (!runs.length) return null;
+    let pick = null;
+    for (const [mm, base] of runs) { const f0 = Math.round((vt - new Date(mm.cycle)) / 3.6e6); if (mm.fields[name].hours.includes(f0)) { pick = [mm, base, f0, f0]; break; } }
+    if (!pick) { const [mm, base] = runs[0], fd = mm.fields[name], f0 = Math.round((vt - new Date(mm.cycle)) / 3.6e6), last = Math.max(...fd.hours);
+      const ord = exact ? (f0 > last ? [-1, -2, -3] : []) : [1, -1, 2, -2, -3], f = ord.map(o => f0 + o).find(x => fd.hours.includes(x));
+      if (f == null) { if (exact) throw new Error(f0 < 1 ? "before this LAMP run" : f0 > last ? `more than 3 h past this LAMP run (ends ${last} h)` : "this hour is missing from the LAMP runs"); return null; }
+      pick = [mm, base, f, f0]; }
+    const [m, base, f, f0] = pick, fd = m.fields[name], cyc = new Date(m.cycle), prev = m !== m0;
+    const gz = m.enc === "gzip", url = `${base}${name}_f${String(f).padStart(3, "0")}.bin${gz ? ".gz" : ""}`;
     if (!glmpLocalBins[url]) glmpLocalBins[url] = fetch(url, { cache: "no-store" }).then(r => {
         if (!r.ok) throw new Error("HTTP " + r.status);
         if (!gz) return r.arrayBuffer();
@@ -2662,7 +2671,7 @@
         return new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer(); })
       .catch(e => { delete glmpLocalBins[url]; throw e; });
     const u16 = new Uint16Array(await glmpLocalBins[url]), g = Object.assign({}, m.grids[fd.grid]);
-    return { field: { grid: g, valueAtIndex: k => { const v = u16[k]; return v === 65535 || v === undefined ? null : v * fd.scale; } }, cyc, f, offset: f - f0 };
+    return { field: { grid: g, valueAtIndex: k => { const v = u16[k]; return v === 65535 || v === undefined ? null : v * fd.scale; } }, cyc, f, offset: f - f0, prev };
   }
   async function glmpStatus(){
     const el = $("glmpStatus"); if (!el) return; const m = await glmpLocalMetaGet();
@@ -2676,9 +2685,9 @@
     if (prod.id === "pw") throw new Error("GLMP does not produce wind exceedance probabilities");
     { const nm = { ws: "wspd", cig: "cig", pop: "pop" }[prod.id], L = nm ? await glmpLocalField(nm, vt) : null;
       if (L) { const off = L.offset ? ` (nearest available, ${L.offset > 0 ? "+" : ""}${L.offset} h)` : "";
-        if (prod.id === "ws") return { f: L.field, scale: "wind", smooth: true, sigma: 0.5, conv: v => v * 1.943844, cyc: L.cyc, off: L.offset, fmt: "kt", title: "GLMP 10 m wind speed (KT)" + off };
-        if (prod.id === "cig") return { f: L.field, scale: "cig", smooth: true, sigma: 0.6, conv: v => v > 6096 ? null : v * 3.28084, cyc: L.cyc, off: L.offset, fmt: "cig", title: "GLMP ceiling height AGL (FT)" + off };
-        return { f: L.field, scale: "pop", smooth: true, sigma: 0.6, cyc: L.cyc, off: L.offset, fmt: "pct", title: "GLMP 1-h PoP" + off }; } }
+        if (prod.id === "ws") return { f: L.field, scale: "wind", smooth: true, sigma: 0.5, conv: v => v * 1.943844, cyc: L.cyc, off: L.offset, prev: L.prev, fmt: "kt", title: "GLMP 10 m wind speed (KT)" + off };
+        if (prod.id === "cig") return { f: L.field, scale: "cig", smooth: true, sigma: 0.6, conv: v => v > 6096 ? null : v * 3.28084, cyc: L.cyc, off: L.offset, prev: L.prev, fmt: "cig", title: "GLMP ceiling height AGL (FT)" + off };
+        return { f: L.field, scale: "pop", smooth: true, sigma: 0.6, cyc: L.cyc, off: L.offset, prev: L.prev, fmt: "pct", title: "GLMP 1-h PoP" + off }; } }
     if (prod.id === "ws") {
       const q = await findGlmp(vt, "wspd"), m = pick(q.g.msgs, q.f, x => x.disc === 0 && x.cat === 2 && x.num === 1 && !isProb(x) && Math.abs(x.fh - q.f) < 0.5);
       if (!m) throw new Error("wind speed for this hour not in GLMP file");
@@ -2726,7 +2735,7 @@
           await drawGrid(card.querySelector("canvas"), prod.view, W, H, F, bm);
           card.querySelector("[data-t]").textContent = F.title;
           const runZ = `${String(F.cyc.getUTCHours()).padStart(2,"0")}${String(F.cyc.getUTCMinutes()).padStart(2,"0")}Z ${F.cyc.getUTCDate()} ${F.cyc.toUTCString().slice(8,11)} run`;
-          card.querySelector("[data-run]").textContent = "GLMP " + runZ; card.querySelector("[data-meta]").innerHTML = "Gridded LAMP " + runZ + fbTag(F.off, vt);
+          card.querySelector("[data-run]").textContent = "GLMP " + runZ; card.querySelector("[data-meta]").innerHTML = "Gridded LAMP " + runZ + (F.prev ? ` <b class="fbtag">⚠ previous run: the newest run has no data for this hour</b>` : "") + fbTag(F.off, vt);
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, i => fieldLabel(F, pts[i]));
         } catch (e) {
           if (seq !== glmpSeq) return;
