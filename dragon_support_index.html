@@ -18,6 +18,10 @@
   header.top .brand{font-weight:700;font-size:31.5px;letter-spacing:.2px}
   header.top .brand small{display:block;font-weight:400;font-size:22.5px;color:var(--muted)}
   header.top .spacer{flex:1}
+  header.top .upd{text-align:right;font-size:18px;line-height:1.35;color:var(--muted)} header.top .upd b{color:var(--text);font-weight:600} header.top .upd b.stale{color:#ff6b6b}
+  #notices{margin:0 16px 10px} #notices:empty{display:none}
+  .notice{background:var(--panel);border:1px solid var(--line);border-left:6px solid #e7b416;border-radius:6px;padding:8px 14px;margin:8px 0 0;font-size:18px}
+  .notice.bad{border-left-color:#cc3d31}
   main{max-width:none;width:100%;box-sizing:border-box;margin:0;padding:14px 1.5vw 60px}
   h1{font-size:36px;margin:6px 0 10px}
   h2{font-size:30px;margin:0}
@@ -85,8 +89,16 @@
 .pbsum{cursor:pointer;list-style:none} .pbsum::-webkit-details-marker{display:none} .pbsum{font-size:20px;font-weight:600;padding:4px 0 8px} .pbsum::before{content:'▾ ';} #pbDet:not([open]) .pbsum::before{content:'▸ ';}
   .sdrow{font-size:16px;color:var(--muted);white-space:nowrap;padding:0 8px;text-align:left} .sdrow small{display:block;font-size:13px}
   .pbclick{cursor:pointer;text-decoration:underline dotted} .pbclick.on{color:#ffd166} th.selh{color:#fff}
-  .pbsrcs{display:flex;flex-wrap:wrap;gap:8px 28px;margin:0 0 10px;font-size:17px} .pbgrp{display:flex;flex-direction:column;gap:2px} .pbgrp b{font-size:16px;color:var(--muted)}
-  .pbsrc{display:flex;align-items:center;gap:6px;white-space:nowrap} .pbsrc small{color:var(--muted)}
+  /* Model sources: compact text (about half size), groups in a grid of small cards */
+  .pbsrcs{margin:0 0 10px;font-size:12px;line-height:1.35}
+  .pbtools{display:flex;align-items:center;gap:8px;margin:0 0 6px;color:var(--muted)} .pbtools span{margin-right:4px}
+  .pbsrcs button{font-size:11.5px;padding:2px 9px;border-radius:4px}
+  .pbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px}
+  .pbgrp{display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);border-radius:6px;padding:4px 8px 6px;background:var(--panel2)}
+  .pbgh{display:flex;align-items:center;gap:6px;margin:0 0 2px} .pbgh b{font-size:12.5px;color:var(--accent);flex:1;min-width:0} .pbgh small{color:var(--muted);font-size:11px}
+  .pbsrc{display:flex;align-items:center;gap:5px;font-size:12px;margin:0;color:var(--text);min-width:0} .pbsrc input{margin:0;width:13px;height:13px;flex:none}
+  .pbsrc .pbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0} .pbsrc small{color:var(--muted);font-size:10.5px;white-space:nowrap;margin-left:auto}
+  .pbsrc .chip{font-size:10.5px;padding:0 5px;max-width:105px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none} .pbsrc .chip:empty{display:none}
   .sdleg i.fvfr{background:#2e9e4f} .sdleg i.fmvfr{background:#2f6fd6} .sdleg i.fifr{background:#d0312d} .sdleg i.flifr{background:#c03fc0}
   #gridCards,#rrfsCards,#glmpCards{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
   #gridCards .card,#rrfsCards .card,#glmpCards .card{flex:1 1 420px;max-width:var(--cardw,600px);margin-bottom:0}
@@ -95,6 +107,31 @@
 .vtbar #btnDataRefresh{font-size:20px;padding:8px 18px} .vtbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 30px;padding:16px 20px;margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel,#161d26);font-size:24px;font-weight:600}
   .vtbar input,.vtbar select{font-size:24px;padding:6px 10px;min-height:44px} .vtbar .hint{font-size:17px;font-weight:400}
   .vtbar label{display:flex;align-items:center;gap:8px;margin:0}
+  /* Sample points & map framing: ~0.75× text, four sub-sections */
+  #ptsFold .inputs{font-size:20px;grid-template-columns:minmax(260px,1.2fr) minmax(260px,1fr) minmax(260px,1fr);grid-template-areas:"set pts data" "set frame frame";gap:12px}
+  #ptsFold label,#ptsFold .hint,#ptsFold .err{font-size:17px} #ptsFold textarea{font-size:18px;min-height:120px} #ptsFold legend{font-size:19px}
+  #ptsFold .setgrp legend{color:#ffd166}
+  #ptsFold .starthere{align-self:flex-start;background:#2fbf71;color:#06150d;font-weight:700;font-size:16px;letter-spacing:.02em;padding:3px 12px;border-radius:999px;margin:2px 0 4px;box-shadow:0 0 0 2px rgba(47,191,113,.25)}
+  #ptsFold .pts{grid-area:pts} #ptsFold .setgrp{grid-area:set} #ptsFold .datagrp{grid-area:data} #ptsFold .framegrp{grid-area:frame}
+  #ptsFold button,#ptsFold .btn{font-size:17px;padding:5px 12px} #ptsFold input{font-size:18px}
+  #ptsFold .grp{gap:6px} #ptsFold .btnrow{gap:6px;margin:4px 0} #ptsFold .nowrap{flex-wrap:nowrap} #ptsFold .state{color:var(--text);opacity:.85}
+  #ptsFold .pair4{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px} #ptsFold .chk{display:flex;align-items:center;gap:6px} #ptsFold .chk input{width:auto}
+  @media (max-width:1100px){#ptsFold .inputs{grid-template-columns:1fr 1fr;grid-template-areas:"set data" "pts pts" "frame frame"} #ptsFold .pair4{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (max-width:700px){#ptsFold .inputs{grid-template-columns:1fr;grid-template-areas:"set" "pts" "data" "frame"}}
+  /* site detail charts */
+  .pbcharts{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin:10px 0 6px;align-items:start}
+  @media (max-width:1000px){.pbcharts{grid-template-columns:1fr}}
+  .pbcharts h4{margin:6px 0 2px;font-size:17px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+  .pbchart{width:100%;height:auto;display:block;background:#141a22;border:1px solid var(--line);border-radius:6px;cursor:crosshair}
+  .pbleg{display:inline-flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;font-weight:400;color:var(--muted)} .pbleg span{display:inline-flex;align-items:center;gap:5px} .pbleg i{display:inline-block;width:20px}
+  .pbread{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:15px;position:sticky;top:8px}
+  .pbread p{margin:6px 0;font-size:14px;color:var(--muted)} .pbread table{width:100%;border-collapse:collapse;font-size:14px} .pbread td{padding:2px 0} .pbread td:last-child{text-align:right;font-weight:600}
+  .pbrh b{font-size:22px} .pbrh small{color:var(--muted);margin-left:6px} .pbbadge{display:inline-block;padding:2px 10px;border-radius:5px;font-weight:700;font-size:14px;margin:4px 0}
+  .pbrs{margin:8px 0 2px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:6px}
+  .xbar{display:flex;gap:6px;justify-content:flex-end;margin:4px 0 12px} .xbar button{font-size:14px;padding:3px 10px;border-radius:5px}
+  .synstamp{background:#fff;border-bottom:2px solid var(--line)}
+  .syncur{outline:3px solid #ffd166;outline-offset:-1px}
+  .tab.tabdis{opacity:.4;cursor:not-allowed;background:#1a1f27;color:var(--muted)}
   .ptsfold{margin:0 0 12px} .ptsfold>summary{cursor:pointer;font-size:19px;font-weight:600;padding:6px 2px}
 .howto{margin:8px 0} .howto>summary{cursor:pointer;color:var(--muted);font-size:17px;font-weight:600} .howto>summary::before{content:'▸ '} .howto[open]>summary::before{content:'▾ '} .howto>summary::-webkit-details-marker{display:none} .howto>summary{list-style:none}
 .setfold>summary{color:#ffd166} .sethelp{padding:6px 14px 10px;font-size:18px;line-height:1.45} .sethelp ol{margin:6px 0 8px 22px;padding:0} .sethelp li{margin:3px 0}
@@ -138,7 +175,9 @@
 <header class="top hide-snip">
   <div class="brand">Dragon Splashdown Support</div>
   <div class="spacer"></div>
+  <div class="upd" id="updStamp" title="When the hourly model data build last finished, and when this page last pulled data"></div>
 </header>
+<div id="notices" class="hide-snip"></div>
 
 <main>
   <div id="snipHead"></div>
@@ -148,7 +187,6 @@
     <label>Valid date (UTC) <input type="date" id="validDate"></label>
     <label>Hour (Z) <select id="validHour"></select></label>
     <label>Wind exceedance threshold (KT) <input type="number" id="windThr" min="1" max="100" step="1" value="13" style="width:5em"></label>
-    <span class="hint">NBM's own probabilities: 7, 11, 17, 22, 30, 34, 48, 64 KT; other values are estimated from mean and spread.</span>
     <span class="spacer" style="flex:1"></span>
     <button class="primary" id="btnDataRefresh" type="button" title="Pull the newest model data now (pre-processed files and live runs) and redraw every table, chart and map">↻ Refresh data</button>
     <label class="chk" title="When on, changing the points, valid date or hour pulls the newest model data before redrawing"><input type="checkbox" id="autoData" checked> Pull new data when points, date or time change</label>
@@ -159,11 +197,11 @@
       <ol>
         <li>Get <code>dragon_support_settings.json</code> from your team's private share (not from GitHub).</li>
         <li>Open <b>Sample points &amp; map framing</b> below and click <b>Load settings file…</b>.</li>
-        <li>Pick the JSON file. The status line next to the buttons should read <i>"Private settings loaded"</i>, the points fill in, and the tables and maps refresh.</li>
+        <li>Pick the JSON file. The status line under the buttons should read <i>"Private settings loaded"</i>, the points fill in, and the tables and maps refresh.</li>
         <li>The settings are kept only in this browser on this computer, so you only need to load them once per computer and browser.</li>
       </ol>
       <p><b>To update the file:</b> edit the points in the box, then click <b>Save settings file</b> to download a new copy (the risk table carries over), and replace the copy on your private share.<br>
-      <b>On a shared or borrowed computer:</b> click <b>Forget settings on this computer</b> when finished.</p>
+      <b>On a shared or borrowed computer:</b> click <b>Forget on this computer</b> when finished.</p>
     </div>
   </details>
   <details class="hide-snip ptsfold" id="ptsFold"><summary>Sample points &amp; map framing (click to show / hide)</summary>
@@ -175,28 +213,40 @@
       <textarea id="pts" spellcheck="false"></textarea>
       <div class="row" style="margin-top:6px">
         <label class="btn" style="margin:0">Load CSV…<input type="file" id="csvFile" accept=".csv,.txt,text/csv" hidden></label>
-        <span class="hint">CSV columns: lat, lon, sitename (a header row is fine). Samples use the nearest NBM grid point to each lat/lon.</span>
-      </div>
-      <div class="row" style="margin-top:6px;flex-wrap:wrap;gap:6px">
-        <label class="btn" style="margin:0">Load settings file…<input type="file" id="dssFile" accept=".json,application/json" hidden></label>
-        <button id="dssSave" type="button">Save settings file</button>
-        <button id="dssForget" type="button">Forget settings on this computer</button>
-        <span class="hint" id="dssState"></span>
-      <div class="row" style="margin-top:8px"><label style="font-size:18px" title="Your public model-data GitHub Pages site. It holds pre-processed NBM, RRFS-ensemble and Gridded LAMP files so the maps draw much faster.">Model data URL <input id="glmpFiles" style="width:min(560px,60vw)" placeholder="blank = this page's own site · for a local or emailed copy: https://YOUR-NAME.github.io/dragon-support/"></label><button id="btnData" type="button">Use</button><span class="hint" id="dataState"></span></div>
+        <span class="hint">CSV columns: lat, lon, sitename (a header row is fine).</span>
       </div>
       <div class="err" id="ptErr"></div>
     </fieldset>
-    <fieldset class="grp">
+
+    <fieldset class="grp setgrp">
+      <legend>Private settings file</legend>
+      <div class="starthere">▶ Start here: load your settings file first</div>
+      <div class="hint">Points, site order and the wind GO / ASSESS / NO-GO table, kept only in this browser.</div>
+      <div class="row btnrow">
+        <label class="btn" style="margin:0">Load settings file…<input type="file" id="dssFile" accept=".json,.txt,application/json,text/plain" hidden></label>
+        <button id="dssSave" type="button">Save settings file</button>
+        <button id="dssForget" type="button">Forget on this computer</button>
+      </div>
+      <div class="hint state" id="dssState"></div>
+    </fieldset>
+
+    <fieldset class="grp datagrp">
+      <legend>Model data</legend>
+      <label for="glmpFiles" title="Your GitHub Pages site holding pre-processed NBM, RRFS-ensemble and Gridded LAMP files, so the maps draw much faster.">Model data URL</label>
+      <div class="row nowrap"><input id="glmpFiles" style="flex:1;min-width:0" placeholder="blank = this site · local copy: https://hurricanelena.github.io/dragon-support/"><button id="btnData" type="button">Use</button></div>
+      <div class="hint state" id="dataState"></div>
+    </fieldset>
+
+    <fieldset class="grp framegrp">
       <legend>Map framing</legend>
-      <div class="pair">
+      <div class="pair4">
         <div><label for="padTop">North / top (px)</label><input type="number" id="padTop" min="0" max="500" step="10" value="90"></div>
         <div><label for="padBottom">South / bottom (px)</label><input type="number" id="padBottom" min="0" max="500" step="10" value="90"></div>
         <div><label for="padding">West / left (px)</label><input type="number" id="padding" min="0" max="500" step="10" value="90"></div>
         <div><label for="padRight">East / right (px)</label><input type="number" id="padRight" min="0" max="500" step="10" value="200"></div>
+        <div><label for="zoomOverride">Zoom (blank = auto-fit)</label><input type="number" id="zoomOverride" min="3" max="13" step="0.25" placeholder="auto"></div>
       </div>
       <label class="chk"><input type="checkbox" id="snipBanner"> Show image banners (title / valid / run strip on each map)</label>
-      <label for="zoomOverride">Zoom override (blank = auto-fit)</label>
-      <input type="number" id="zoomOverride" min="3" max="13" step="0.25" placeholder="auto">
       <div class="hint">Maps re-center automatically when points change. One point uses the default zoom.</div>
     </fieldset>
   </section>
@@ -224,12 +274,12 @@
 
   <div class="tabs hide-snip" role="tablist">
     <button class="tab active" data-tab="samples" role="tab">Point samples</button>
-    <button class="tab" data-tab="ts" role="tab">Time series</button>
+    <button class="tab" data-tab="ts" role="tab">Point Time Series</button>
     <button class="tab" data-tab="synoptic" role="tab">Synoptic</button>
     <button class="tab" data-tab="grid" role="tab">NBM Gridded</button>
     <button class="tab" data-tab="rrfs" role="tab">RRFS</button>
     <button class="tab" data-tab="glmp" role="tab">Gridded LAMP</button>
-    <button class="tab" data-tab="ecmwf" role="tab">ECMWF</button>
+    <button class="tab" data-tab="ecmwf" role="tab">ECMWF Point Data</button>
   </div>
   <section class="card tabpane" id="tab-samples">
     <div class="card-head"><h2>Point samples</h2><span class="meta">Built on this page from live model data</span></div>
@@ -237,7 +287,7 @@
       <details id="pbDet" class="hide-snip"><summary class="pbsum">Model sources (click to show / hide)</summary><div id="pbSrc" class="pbsrcs"></div></details>
       <div id="pbBody"></div>
       <div id="pbGrid" style="margin-top:14px"></div>
-      <div class="row hide-snip" style="margin-top:10px"><button class="primary" id="btnPbReload">↻ Update samples</button><button id="btnCopy" title="Copy the sample tables as tab-separated text (pastes into Excel or an email)">Copy sample tables</button><span class="hint">Re-reads the model files; images are not touched. RRFS members download ≈8 MB per hour each when ticked.</span></div>
+      <div class="row hide-snip" style="margin-top:10px"><button class="primary" id="btnPbReload">↻ Update samples</button><span class="hint">Re-reads the model files; images are not touched. RRFS members download ≈8 MB per hour each when ticked.</span></div>
     </div>
   </section>
   <section class="card" id="oldSamples" style="display:none">
@@ -250,6 +300,7 @@
   <div id="imgBar" class="row hide-snip imgbar" style="display:none">
     <button class="primary" id="btnRefresh" title="Reload all imagery and point samples">↻ Refresh imagery</button>
     <label class="chk" title="When off, changing inputs refreshes only the point samples"><input type="checkbox" id="autoImages" checked> Update images when inputs change</label>
+    <label class="chk" title="Off: Save PNG leaves out the colour legend band at the bottom of each map. On: the legend is kept."><input type="checkbox" id="pngLegend"> Save PNGs with legend</label>
   </div>
   <div id="imgStale" class="note hide-snip" style="display:none;border:1px solid var(--warn);border-radius:6px;margin-bottom:10px">Images were not updated with the latest inputs. Press "↻ Refresh imagery" to update them.</div>
   <div id="tab-ecmwf" class="tabpane" style="display:none">
@@ -265,12 +316,12 @@
     <div id="gridCards"></div>
   </div>
   <section id="tab-ts" class="card tabpane" style="display:none">
-    <div class="card-head"><h2>Time series</h2><span class="meta">One site, one parameter, hourly, value at the nearest grid point</span></div>
+    <div class="card-head"><h2>Point Time Series</h2><span class="meta">One site, one parameter, hourly, sampled within 10 NM like Point samples</span></div>
     <div style="padding:10px 12px">
       <div class="row" style="flex-wrap:wrap;gap:10px 18px;font-size:18px">
         <label>Site <select id="tsSite"></select></label>
         <label>Parameter <select id="tsParam"></select></label>
-        <label>Model <select id="tsModel"><option value="nbm">NBM</option><option value="rrfs">RRFS (deterministic)</option><option value="hrrr">HRRR (latest run)</option><option value="nws">NWS forecast grid (api.weather.gov)</option><option value="glmp">Gridded LAMP</option><option value="blend" selected>Model blend (Point samples sources)</option></select></label>
+        <label>Model <select id="tsModel"><option value="nbm">NBM</option><option value="rrfs">RRFS (deterministic)</option><option value="hrrr">HRRR (latest run)</option><option value="nws">NWS Forecast</option><option value="glmp">Gridded LAMP</option><option value="rrfsens">RRFS ensemble (deterministic + 5 members)</option><option value="hrrrens">HRRR ensemble (8 time-lagged cycles)</option><option value="blend" selected>Model blend (Point samples sources)</option></select></label>
         <label>Hours before <input id="tsBefore" type="number" min="0" max="48" value="6" style="width:4em"></label>
         <label>after <input id="tsAfter" type="number" min="0" max="48" value="6" style="width:4em"></label>
         <label>Colour by <select id="tsColor"><option value="thresh">Thresholds</option><option value="image" selected>Image colour tables</option><option value="avi">Flight categories (ceiling / visibility)</option></select></label>
@@ -282,19 +333,20 @@
       </div>
       <p class="hint" id="tsBlendNote" style="display:none">The model blend uses the sources ticked under Point samples › Model sources, with the same weights, 10 NM sampling and member pooling. In the blend, PoP and lightning are the weighted chance across sources.</p>
       <p class="hint" id="tsAviNote" style="display:none">Flight categories apply to ceiling and visibility only; other parameters fall back to thresholds.</p>
-      <details class="howto"><summary>How this is made</summary><p class="hint">Each hour is read from the chosen model's GRIB2 file at the grid point nearest the site: NBM from NOAA's NBM bucket (the newest run that has the hour, else an older run or the nearest hour), RRFS deterministic and HRRR from NOAA's RRFS and HRRR buckets (newest run that reaches the hour). Wind is converted to KT, temperatures to °F, ceiling to FT (above 20,000 ft or none = Unlimited) and visibility to SM (METAR fractions). The gridded row and the graph use the same values. Threshold colouring: green, yellow beyond the caution value, red beyond the warning value. Image colour tables use the same scales as the maps. Ceiling and visibility always use flight categories.</p></details>
+      <details class="howto"><summary>How this is made</summary><p class="hint">Each hour is read from the chosen model's GRIB2 file using the same 10 NM sampling as Point samples (mean of every grid point within 10 NM for wind, gust, ceiling, visibility, temperature and dew point; highest for PoP, thunder and precipitation). Model blend, RRFS ensemble and HRRR ensemble are worked out exactly like the Point samples tables (pooled members, source weights split across members, ceiling and visibility as the members' median); the two ensembles use all of that model's members for this chart only and do not change the Point samples sources: NBM from NOAA's NBM bucket (the newest run that has the hour, else an older run or the nearest hour), RRFS deterministic and HRRR from NOAA's RRFS and HRRR buckets (newest run that reaches the hour). Wind is converted to KT, temperatures to °F, ceiling to FT (above 20,000 ft or none = Unlimited) and visibility to SM (METAR fractions). The gridded row and the graph use the same values. Threshold colouring: green, yellow beyond the caution value, red beyond the warning value. Image colour tables use the same scales as the maps. Ceiling and visibility always use flight categories.</p></details>
       <div id="tsOut" style="margin-top:10px"></div>
-      <div class="row" style="margin-top:10px"><button class="primary" id="btnTs">↻ Update time series</button><button id="btnTsCopy" title="Copy the time series as tab-separated text">Copy time series</button></div>
+      <div class="row" style="margin-top:10px"><button class="primary" id="btnTs">↻ Update time series</button></div>
     </div>
   </section>
   <div id="tab-synoptic" class="tabpane" style="display:none">
-    <details class="howto" style="width:100%"><summary>How this is made</summary><p class="hint">WPC's surface analysis / forecast chart (fronts, isobars, high and low centres and NDFD weather) for the frame nearest the valid time: short-range charts out to about 2.5 days, then the day 3–7 charts. The image is cropped to the West, with the east edge near the Four Corners and the bottom above the NDFD legend. WPC's own valid-time stamp is kept under the chart.</p></details>
+    <details class="howto" style="width:100%"><summary>How this is made</summary><p class="hint">WPC's surface analysis / forecast chart (fronts, isobars, high and low centres and NDFD weather) for the frame nearest the valid time: short-range charts out to about 2.5 days, then the day 3–7 charts. Four frames are shown: the one nearest the valid time (outlined) plus the frame before it and the two after it. Each image is cropped to the West, with the east edge near the Four Corners and the bottom above the NDFD legend, and shows the chart only. WPC's own printed valid-time stamp, cut from the same image, sits above each chart so you can confirm which forecast was fetched. Frames come from the short-range charts every 6 h from the latest 00Z/12Z package, then the day 3–7 charts at 12Z. Use Open ↗ to see WPC's full chart.</p></details>
     <div id="synCards" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start"></div>
   </div>
   <div id="tab-glmp" class="tabpane" style="display:none">
-    <div class="row hide-snip" style="margin:0 0 10px"><label style="font-size:18px">GLMP data URL <input id="glmpBase" style="width:min(640px,70vw)" placeholder="optional fallback: CORS-enabled mirror of glmp/prod"></label><button id="btnGlmp">↻ Load</button></div>
+    <details class="howto hide-snip"><summary>Fallback source (optional, rarely needed)</summary><div class="row" style="margin:6px 0 10px"><label style="font-size:17px">GLMP mirror URL <input id="glmpBase" style="width:min(640px,70vw)" placeholder="CORS-enabled mirror of NOMADS glmp/prod"></label><button id="btnGlmp">Use mirror</button></div>
+      <p class="hint" style="font-size:17px;margin:0 0 8px">The maps load by themselves from the model data site, like NBM and RRFS. A mirror is only used if that site has no Gridded LAMP files.</p></details>
     <div id="glmpStatus" class="hint hide-snip" style="margin:0 0 10px;font-size:17px"></div>
-    <details class="howto"><summary>How this is made</summary><p class="hint hide-snip" style="margin:0 0 10px">Gridded LAMP is read first from pre-processed files (latest.json plus one small file per element and hour) at the GLMP files URL, normally a separate public GitHub Pages repository that only holds this NOAA output, or glmp/ next to the page: the newest complete hourly run is downloaded from NOMADS, decoded and cropped to the briefing area off the page, then drawn here exactly like the NBM and RRFS maps, with values at the nearest grid point. The line above shows the run used, how old it is, which elements came through (ceiling, visibility, wind speed and gust, temperature, dew point, sky cover, 1-h PoP, and the ceiling &lt; 500 ft / visibility &lt; 1 SM probabilities) and the probability thresholds actually found in the files. Without those files (for example an emailed copy) the maps use the GLMP data URL below, if given.<br>Gridded LAMP (GFS-LAMP, hourly runs at HH30Z out to 38 h) drawn the same way as the NBM and RRFS maps. Files follow MDL's LAMP web-services list: hourly CONUS files (ceiling, visibility, 1-h PoP), fcsts_wspd (wind speed) and fcsts_cigp2 / visp2 (probabilities for the sample tables). GLMP has no wind-exceedance probability. NOAA's NOMADS server does not allow browser (cross-origin) reads, so live data needs a CORS-enabled mirror of the glmp/prod directory entered above.</p></details>
+    <details class="howto"><summary>How this is made</summary><p class="hint hide-snip" style="margin:0 0 10px">Gridded LAMP is read first from pre-processed files (latest.json plus one small file per element and hour) at the GLMP files URL, normally a separate public GitHub Pages repository that only holds this NOAA output, or glmp/ next to the page: the newest complete hourly run is downloaded from NOMADS, decoded and cropped to the briefing area off the page, then drawn here exactly like the NBM and RRFS maps, with values at the nearest grid point. The line above shows the run used, how old it is, which elements came through (ceiling, visibility, wind speed and gust, sky cover, 1-h PoP, and the ceiling &lt; 500 ft / visibility &lt; 1 and &lt; 3 SM probabilities (used for ceiling ≤ 500 ft and, interpolated, visibility ≤ 1 NM)) and the probability thresholds actually found in the files. Without those files (for example an emailed copy) the maps use the GLMP data URL below, if given.<br>Gridded LAMP (GFS-LAMP, hourly runs at HH30Z out to 38 h) drawn the same way as the NBM and RRFS maps. Files follow MDL's LAMP web-services list: hourly CONUS files (ceiling, visibility, 1-h PoP), fcsts_wspd (wind speed) and fcsts_cigp2 / visp2 (probabilities for the sample tables). GLMP has no wind-exceedance probability. NOAA's NOMADS server does not allow browser (cross-origin) reads, so live data needs a CORS-enabled mirror of the glmp/prod directory entered above.</p></details>
     <div id="glmpCards"></div>
   </div>
   <div id="tab-rrfs" class="tabpane" style="display:none">
@@ -307,6 +359,7 @@
   <details class="hide-snip">
     <summary>Data sources &amp; notes</summary>
     <div class="body hint">
+      <p><b>Wind exceedance threshold:</b> NBM's own probabilities: 7, 11, 17, 22, 30, 34, 48, 64 KT; other values are estimated from mean and spread.</p>
       <p><b>Imagery:</b> drawn in the browser from NBM, RRFS and Gridded LAMP GRIB2 data; Esri satellite basemap.</p>
       <p><b>Point values:</b> api.open-meteo.com (models=ncep_nbm_conus: hourly precipitation_probability %, wind_speed_10m KT). Backup: thredds.ucar.edu NetCDF Subset Service, grib/NCEP/NBM/CONUS/Best. Variables: Total_precipitation_surface_1_Hour_Accumulation_probability_above_0p254 (%), Wind_speed_height_above_ground (m/s → KT).</p>
       <p><b>ECMWF charts:</b> charts.ecmwf.int open-charts API (CC-BY-4.0). The ceiling map comes from medium-cloud-parameters (layer ceiling, North America), using the run closest to the NBM run in use and the exact valid time or the nearest available step. The ENS visibility meteograms (aviation) come from the 00Z/12Z run closest to the NBM run. ECMWF draws its legends in metres and km. This page covers them with ft (ceiling) and NM (visibility) labels for the same colour bins: 150 m ≈ 0.1 NM, 350 m ≈ 0.2, 600 m ≈ 0.3, 800 m ≈ 0.4, 1.5 km ≈ 0.8, 3 km ≈ 1.6, 5 km ≈ 2.7, 10 km ≈ 5.4 NM. NBM ceiling (ft) and visibility (NM) at each point are added to the sample table.</p>
@@ -905,7 +958,7 @@
   /* ===== Shared wind/weather helpers ===== */
   const SDW_URL = ""; // retired
   const SDW_WX = [{ k: "p", name: "Precip", sub: "≤10 NM" }, { k: "l", name: "Lightning", sub: "≤10 NM" },
-                  { k: "c", name: "Ceiling", sub: "<500 ft" }, { k: "v", name: "Visibility", sub: "<1 SM" }];
+                  { k: "c", name: "Ceiling", sub: "≤500 ft" }, { k: "v", name: "Visibility", sub: "≤1 NM" }];
   const SDW_SPARSE = new Set(["l", "c", "v"]), SDW_CAT = ["GO", "ASSESS", "NO-GO"], SDW_CC = ["s", "m", "v"];
   const sdw = { data: null, tindex: null, hourly: {}, dd: {}, err: "", loading: false };
   const wq = (pairs, q) => { pairs.sort((a, b) => a[0] - b[0]); const W = pairs.reduce((s, p) => s + p[1], 0); let c = 0;
@@ -1036,9 +1089,16 @@
     });
   }
   /* ---- RRFS ensemble added as Splashdown sources (sampled within 10 NM of each site, for the table hours) ----
-     Mean source (always): REFS ensemble mean wind; precip / ceiling<500 ft / vis<1 SM chances from REFS probabilities.
+     Mean source (always): REFS ensemble mean wind; precip / ceiling ≤500 ft / vis ≤1 NM chances from REFS probabilities.
      Member source (on demand, ~120 MB): RRFS members m001–m005, each hour: 10 m wind from U/V, 1-h precip, lightning, ceiling, visibility. */
   const R10 = 10 * 1852;
+  /* Weather limits used by every table and chart: ceiling at or below 500 ft, visibility at or below 1 NM (1852 m).
+     Probability products only come at fixed thresholds (1 SM, then 2 SM / 3200 m / 3 SM), so P(vis ≤ 1 NM) is
+     interpolated between the two nearest thresholds in log(visibility). */
+  const CIG_LIM_M = 152.4, CIG_LIM_FT = 500, VIS_LIM_M = 1852;
+  // MOS / LAMP category → representative value (category middle) for the ceiling and visibility medians
+  const MOS_CIG_FT = { 1: 100, 2: 300, 3: 700, 4: 1500, 5: 2500, 6: 4800, 7: 9300, 8: 1e6 }, MOS_VIS_SM = { 1: 0.25, 2: 0.75, 3: 1.5, 4: 2.5, 5: 4, 6: 6, 7: 10 };
+  const visLimP = (pLo, tLo, pHi, tHi) => pLo == null ? null : pHi == null ? pLo : Math.min(100, Math.max(pLo, pLo + (pHi - pLo) * Math.log(VIS_LIM_M / tLo) / Math.log(tHi / tLo)));
   function sitePts(){
     const d = sdw.data, user = parsePoints($("pts").value).pts;
     return d.sites.map(s => { const la = s.lat ?? s.latitude, lo = s.lon ?? s.longitude;
@@ -1057,7 +1117,7 @@
     const grab = async (q, test) => { if (!q) return null; const r = idxRecord(q, test); return r ? cachedRange(q.url, r) : null; };
     const fw = await grab(qm, l => l.indexOf(`:WIND:10 m above ground:${qm.f} hour fcst:wt ens mean`) >= 0);
     const fp = await grab(qe, l => l.indexOf(`:APCP:surface:${qe.f-1}-${qe.f} hour acc fcst:prob >0.254:`) >= 0);
-    const fv = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l));
+    const fv = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l)), fv2 = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <3200:/.test(l));
     let fc = null;
     if (qp) { const cands = qp.idx.split("\n").filter(l => /:HGT:cloud ceiling:\d+ hour fcst:prob </.test(l));
       const pick = cands.sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - 152.4) - Math.abs(parseFloat(y.split("prob <")[1]) - 152.4))[0];
@@ -1068,7 +1128,7 @@
       if (fp) out["p@" + id] = area(fp, p, "max", v => v / 100);
       if (fl) out["l@" + id] = area(fl, p, "max", v => v / 100);
       if (fc) out["c@" + id] = area(fc, p, "mean", v => v / 100);
-      if (fv) out["v@" + id] = area(fv, p, "mean", v => v / 100); });
+      if (fv) { const x = visLimP(area(fv, p, "mean"), 1600, fv2 ? area(fv2, p, "mean") : null, 3200); out["v@" + id] = x == null ? null : x / 100; } });
     return { out, cyc: (qm || qp || qe)?.cyc };
   }
   async function rrfsMemberHour(m, cyc, t, pts){
@@ -1084,8 +1144,8 @@
       if (u && v) { let s = 0, n = 0; for (const k of lccIndices(u.grid, p.lat, p.lon, R10)) { const a = u.valueAtIndex(k), b = v.valueAtIndex(k); if (a == null || b == null) continue; s += Math.hypot(a, b); n++; } if (n) out["w@" + id] = s / n * 1.943844; }
       if (ap) { const x = area(ap, p, "max"); if (x != null) out["p@" + id] = x > 0.254 ? 1 : 0; }
       if (lt) { const x = area(lt, p, "max"); if (x != null) out["l@" + id] = x > 0 ? 1 : 0; }
-      if (ce) { const x = area(ce, p, "mean"); out["c@" + id] = x != null && x < 152.4 ? 1 : 0; }
-      if (vi) { const x = area(vi, p, "mean"); if (x != null) out["v@" + id] = x < 1609.3 ? 1 : 0; } });
+      if (ce) { const x = area(ce, p, "mean"); out["c@" + id] = x != null && x <= CIG_LIM_M ? 1 : 0; }
+      if (vi) { const x = area(vi, p, "mean"); if (x != null) out["v@" + id] = x <= VIS_LIM_M ? 1 : 0; } });
     return out;
   }
   async function sdwRrfs(vt){
@@ -1120,7 +1180,7 @@
   }
   /* ===================== Point board: built on this page from model grids (no Splashdown Weather data) =====================
      Sources (each can be switched on/off; RRFS members individually):
-       NBM            — core: 1-h PoP>0.01", 1-h thunder, P(ceiling<500 ft), P(vis<1 SM); QMD: 10 m wind mean/SD → wind quantile members
+       NBM            — core: 1-h PoP>0.01", 1-h thunder, P(ceiling ≤500 ft), P(vis ≤1 NM, interpolated from 1 and 2 SM); QMD: 10 m wind mean/SD → wind quantile members
        RRFS (det)     — rrfs.YYYYMMDD/CC/rrfs.tCCz.2dfld.3km.fFFF.conus.grib2 (hourly cycles)
        RRFS ens mean  — REFS ensprod mean / eas / prob files (00/06/12/18Z, to f60)
        RRFS m001–m005 — rrfsens.YYYYMMDD/CC/mMMM/rrfs.tCCz.mMMM.2dfldnomads.3km.fFFF.conus.grib2 (00/06/12/18Z, to f60)
@@ -1159,8 +1219,8 @@
       if (u && v) { let s = 0, n = 0; for (const k of lccIndices(u.grid, p.lat, p.lon, R10)) { const a = u.valueAtIndex(k), b = v.valueAtIndex(k); if (a == null || b == null) continue; s += Math.hypot(a, b); n++; } if (n) o.w = s / n * 1.943844; }
       if (ap) { const x = area(ap, p, "max"); if (x != null) o.p = x > 0.254 ? 1 : 0; }
       if (lt) { const x = area(lt, p, "max"); if (x != null) o.l = x > 0 ? 1 : 0; }
-      if (ce) { const x = area(ce, p, "mean"); o.c = x != null && x < 152.4 ? 1 : 0; }
-      if (vi) { const x = area(vi, p, "mean"); if (x != null) o.v = x < 1609.3 ? 1 : 0; }
+      if (ce) { const x = area(ce, p, "mean"); o.c = x != null && x <= CIG_LIM_M ? 1 : 0; o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; }
+      if (vi) { const x = area(vi, p, "mean"); if (x != null) { o.v = x <= VIS_LIM_M ? 1 : 0; o.vr = x / 1609.34; } }
       return o; });
   }
   async function rrfsMeanHourSites(t, sites){
@@ -1169,7 +1229,7 @@
     const grab = async (q, test) => { if (!q) return null; const r = idxRecord(q, test); return r ? cachedRange(q.url, r) : null; };
     const fw = await grab(qm, l => qm && l.indexOf(`:WIND:10 m above ground:${qm.f} hour fcst:wt ens mean`) >= 0);
     const fp = await grab(qe, l => qe && l.indexOf(`:APCP:surface:${qe.f-1}-${qe.f} hour acc fcst:prob >0.254:`) >= 0);
-    const fv = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l));
+    const fv = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l)), fv2 = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <3200:/.test(l));
     let fc = null;
     if (qp) { const c = qp.idx.split("\n").filter(l => /:HGT:cloud ceiling:\d+ hour fcst:prob </.test(l))
         .sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - 152.4) - Math.abs(parseFloat(y.split("prob <")[1]) - 152.4))[0];
@@ -1178,7 +1238,7 @@
       if (fw) { const x = area(fw, p, "mean"); if (x != null) o.w = x * 1.943844; }
       if (fp) { const x = area(fp, p, "max"); if (x != null) o.p = x / 100; }
       if (fc) { const x = area(fc, p, "mean"); if (x != null) o.c = x / 100; }
-      if (fv) { const x = area(fv, p, "mean"); if (x != null) o.v = x / 100; }
+      if (fv) { const x = visLimP(area(fv, p, "mean"), 1600, fv2 ? area(fv2, p, "mean") : null, 3200); if (x != null) o.v = x / 100; }
       return o; }) };
   }
   // Sources mirror Splashdown Weather's model list (queried live from this page). Weights follow Splashdown; grouped
@@ -1258,7 +1318,7 @@
     return Object.entries(mem).map(([id, o]) => { const r = {};
       if (o.wind_speed_10m != null) r.w = o.wind_speed_10m;
       if (o.precipitation != null) r.p = o.precipitation >= 0.254 ? 1 : 0;
-      if (o.temperature_2m != null && o.dew_point_2m != null) r.cs = (o.temperature_2m - o.dew_point_2m) * 125 < 152.4 && (o.cloud_cover_low == null || o.cloud_cover_low >= 70) ? 1 : 0;
+      if (o.temperature_2m != null && o.dew_point_2m != null) r.cs = (o.temperature_2m - o.dew_point_2m) * 125 <= CIG_LIM_M && (o.cloud_cover_low == null || o.cloud_cover_low >= 70) ? 1 : 0;
       return { id, r }; });
   }
   let hrrrTop = null;
@@ -1293,8 +1353,8 @@
       if (u && v) { let s = 0, n = 0; for (const k of lccIndices(u.grid, p.lat, p.lon, R10)) { const a = u.valueAtIndex(k), b = v.valueAtIndex(k); if (a == null || b == null) continue; s += Math.hypot(a, b); n++; } if (n) o.w = s / n * 1.943844; }
       if (rf) { const x = area(rf, p, "max"); if (x != null) o.p = x >= 20 ? 1 : 0; }
       if (lt) { const x = area(lt, p, "max"); if (x != null) o.l = x > 0 ? 1 : 0; }
-      if (ce) { const x = area(ce, p, "mean"); o.c = x != null && x < 152.4 ? 1 : 0; }
-      if (vi) { const x = area(vi, p, "mean"); if (x != null) o.v = x < 1609.3 ? 1 : 0; }
+      if (ce) { const x = area(ce, p, "mean"); o.c = x != null && x <= CIG_LIM_M ? 1 : 0; o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; }
+      if (vi) { const x = area(vi, p, "mean"); if (x != null) { o.v = x <= VIS_LIM_M ? 1 : 0; o.vr = x / 1609.34; } }
       return o; });
   }
   /* ---- NWS API (api.weather.gov): hourly forecast grid at each site ----
@@ -1339,9 +1399,12 @@
         const qc = await findNbm("core", T, f => `:APCP:surface:${f-1}-${f} hour acc fcst:prob >0.254:`, 36);
         const [fp, ft, fc, fv] = await Promise.all([g(qc, l => l.indexOf(`:APCP:surface:${qc.f-1}-${qc.f} hour acc fcst:prob >0.254:`) >= 0), g(qc, l => l.indexOf(`:TSTM:surface:${qc.f-1}-${qc.f} hour acc fcst:`) >= 0),
           g(qc, l => /:CEIL:cloud ceiling:\d+ hour fcst:prob <152\.4:/.test(l)), g(qc, l => /:VIS:surface:\d+ hour fcst:prob <1609\.34:/.test(l))]);
+        const [fv2, fcd, fvd] = await Promise.all([g(qc, l => /:VIS:surface:\d+ hour fcst:prob <3218\.69:/.test(l)), g(qc, l => /:CEIL:cloud ceiling:\d+ hour fcst:$/.test(l.trim())), g(qc, l => /:VIS:surface:\d+ hour fcst:$/.test(l.trim()))]);
         return { cyc: qc.cyc, members: [{ id: "prob", vals: sites.map(p => { const o = {};
           if (fp) { const x = area(fp, p, "max"); if (x != null) o.p = x / 100; } if (ft) { const x = area(ft, p, "max"); if (x != null) o.l = x / 100; }
-          if (fc) { const x = area(fc, p, "mean"); if (x != null) o.c = x / 100; } if (fv) { const x = area(fv, p, "mean"); if (x != null) o.v = x / 100; } return o; }) }] };
+          if (fc) { const x = area(fc, p, "mean"); if (x != null) o.c = x / 100; }
+          if (fv) { const x = visLimP(area(fv, p, "mean"), 1609.34, fv2 ? area(fv2, p, "mean") : null, 3218.69); if (x != null) o.v = x / 100; }
+          if (fcd) { const x = area(fcd, p, "mean"); o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; } if (fvd) { const x = area(fvd, p, "mean"); if (x != null) o.vr = x / 1609.34; } return o; }) }] };
       }
       if (src.kind === "nbmw") {
         const q = await findNbm("core", T, f => ":WIND:10 m above ground:" + f + " hour fcst:"), fw = await g(q, l => /:WIND:10 m above ground:\d+ hour fcst:$/.test(l.trim()));
@@ -1354,19 +1417,21 @@
     if (src.kind === "refs") {
       const qp = await findRefs("prob", T); let fc = null;
       const cand = qp.idx.split("\n").filter(l => /:HGT:cloud ceiling:\d+ hour fcst:prob </.test(l)).sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - 152.4) - Math.abs(parseFloat(y.split("prob <")[1]) - 152.4))[0];
-      const rv = idxRecord(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l)), rc = cand ? idxRecord(qp, l => l === cand) : null;
-      const [c, v] = await Promise.all([rc ? cachedRange(qp.url, rc) : null, rv ? cachedRange(qp.url, rv) : null]);
-      return { cyc: qp.cyc, members: [{ id: "refs", vals: sites.map(p => { const o = {}; if (c) { const x = area(c, p, "mean"); if (x != null) o.c = x / 100; } if (v) { const x = area(v, p, "mean"); if (x != null) o.v = x / 100; } return o; }) }] };
+      const rv = idxRecord(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l)), rv2 = idxRecord(qp, l => /:VIS:surface:\d+ hour fcst:prob <3200:/.test(l)), rc = cand ? idxRecord(qp, l => l === cand) : null;
+      const [c, v, v2] = await Promise.all([rc ? cachedRange(qp.url, rc) : null, rv ? cachedRange(qp.url, rv) : null, rv2 ? cachedRange(qp.url, rv2) : null]);
+      return { cyc: qp.cyc, members: [{ id: "refs", vals: sites.map(p => { const o = {}; if (c) { const x = area(c, p, "mean"); if (x != null) o.c = x / 100; }
+        if (v) { const x = visLimP(area(v, p, "mean"), 1600, v2 ? area(v2, p, "mean") : null, 3200); if (x != null) o.v = x / 100; } return o; }) }] };
     }
     if (src.kind === "glmpp") {
       const r = await glmpProbs(T);
-      return { cyc: r.cyc, members: [{ id: "glmp", vals: sites.map(p => { const o = {}; if (r.c) { const x = area(r.c, p, "mean"); if (x != null) o.c = x / 100; } if (r.v) { const x = area(r.v, p, "mean"); if (x != null) o.v = x / 100; } return o; }) }] };
+      return { cyc: r.cyc, members: [{ id: "glmp", vals: sites.map(p => { const o = {}; if (r.c) { const x = area(r.c, p, "mean"); if (x != null) o.c = x / 100; } if (r.v) { const x = visLimP(area(r.v, p, "mean"), 1609.34, r.v3 ? area(r.v3, p, "mean") : null, 4828.03); if (x != null) o.v = x / 100; }
+        if (r.cd) { const x = area(r.cd, p, "mean"); o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; } if (r.vd) { const x = area(r.vd, p, "mean"); if (x != null) o.vr = x / 1609.34; } return o; }) }] };
     }
     if (src.kind === "nws") {
       const vals = await Promise.all(sites.map(async p => { try { const x = await nwsSite(p, t), o = {};
         if (x.ws != null) o.w = x.ws; if (x.pop != null) o.p = x.pop / 100; if (x.tstm != null) o.l = x.tstm / 100;
-        if (x.cigFt != null) o.c = x.cigFt !== "unl" && x.cigFt < 500 ? 1 : 0; if (x.visSm != null) o.v = x.visSm < 1 ? 1 : 0; return o; } catch (e) { return {}; } }));
-      if (!vals.some(o => Object.keys(o).length)) throw new Error("no NWS forecast grid for these sites/hour");
+        if (x.cigFt != null) { o.c = x.cigFt !== "unl" && x.cigFt <= CIG_LIM_FT ? 1 : 0; o.cr = x.cigFt === "unl" ? 1e6 : x.cigFt; } if (x.visSm != null) { o.v = x.visSm * 1609.34 <= VIS_LIM_M ? 1 : 0; o.vr = x.visSm; } return o; } catch (e) { return {}; } }));
+      if (!vals.some(o => Object.keys(o).length)) throw new Error("no NWS Forecast for these sites/hour");
       return { cyc: null, members: [{ id: "nws", vals }] };
     }
     if (src.kind === "mos") {
@@ -1375,7 +1440,7 @@
       const members = [];
       for (let r = 0; r < nRuns; r++) members.push({ id: "run" + r, vals: per.map(x => { const run = x && x.runs[r]; if (!run) return {};
         let best = null; for (const row of run) { const d = Math.abs(Date.parse(row.ftime_utc + "Z") - t); if (d <= (src.step === 1 ? 0.5 : 1.5) * 3.6e6 && (!best || d < best[0])) best = [d, row]; }
-        if (!best) return {}; const o = {}, row = best[1]; if (row.cig != null) o.c = row.cig <= 2 ? 1 : 0; if (row.vis != null) o.v = row.vis <= 2 ? 1 : 0; return o; }) });
+        if (!best) return {}; const o = {}, row = best[1]; if (row.cig != null) { o.c = row.cig <= 2 ? 1 : 0; o.cr = MOS_CIG_FT[row.cig] ?? null; } if (row.vis != null) o.vr = MOS_VIS_SM[row.vis] ?? null; if (row.vis != null) o.v = row.vis <= 2 ? 1 : row.vis == 3 ? Math.log(VIS_LIM_M / 1609.34) / Math.log(2) : 0; return o; }) });
       per.forEach((x, i) => { if (x) notes.push(`${sites[i].name}: ${x.st} (${x.dnm} NM)`); });
       return { cyc: per.find(Boolean)?.rt, members, note: notes.join("; ") };
     }
@@ -1387,23 +1452,34 @@
     }
     throw new Error("unknown source");
   }
-  // evaluate one site over a list of hours: averages over the hours (wind: pooled weighted mean / 99th percentile per hour)
-  function pbEval(si, hours, data){
-    const on = PB_SRC.filter(s => s.on);
+  /* Evaluate one site over a list of hours; every value is the average of the hourly values.
+     Wind, each hour:
+       • NBM is the only wind source switched on (NBM wind and/or NBM wind percentiles, nothing else with wind):
+         mean, 99th percentile and chance of exceeding the threshold come straight from NBM's own quantile-mapped
+         wind distribution (QMD mean and spread; exceedance = 1 − Φ((threshold − mean) / spread)).
+       • Otherwise: every member's 10 m wind at the site is pooled, each source's weight split evenly across its
+         members; mean = weighted mean, 99th percentile = weighted 99th percentile, exceedance = weight of members
+         above the threshold. With fewer than 5 members there is no real spread, so the 99th percentile falls back
+         to NBM's QMD value if it is loaded (else "–"). */
+  function pbEval(si, hours, data, list){
+    const on = list || PB_SRC.filter(s => s.on), thr = thrKt();
     const windSrc = on.filter(s => s.kind !== "nbmq" && hours.some(t => data[s.id + t]?.members.some(m => m.vals[si]?.w != null)));
-    const nbmOnly = windSrc.length && windSrc.every(s => s.kind === "nbmw") && on.some(s => s.kind === "nbmq");
-    let wm = 0, wp = 0, nh = 0, np = 0;
+    const qmd = t => { const o = data["nbmq" + t]?.members[0]?.vals[si]; return o && o.wm != null && o.w99 != null ? o : null; };
+    const nbmOnly = hours.some(qmd) && windSrc.every(s => s.kind === "nbmw");
+    let wm = 0, wp = 0, we = 0, nh = 0, np = 0, ne = 0;
     for (const t of hours) {
-      if (nbmOnly) { const o = data["nbmq" + t]?.members[0].vals[si]; if (o && o.wm != null) { wm += o.wm; wp += o.w99; nh++; np++; continue; } }
+      if (nbmOnly) { const o = qmd(t); if (o) { const sd = (o.w99 - o.wm) / 2.326;
+          wm += o.wm; wp += o.w99; we += sd <= 0.01 ? (o.wm > thr ? 1 : 0) : 1 - normCdf((thr - o.wm) / sd); nh++; np++; ne++; continue; } }
       const pairs = [];
       for (const s of windSrc) { const d = data[s.id + t]; if (!d) continue; const ws = d.members.map(m => m.vals[si]?.w).filter(x => x != null); ws.forEach(x => pairs.push([x, srcW(s) / ws.length])); }
       if (!pairs.length) continue; const W = pairs.reduce((a, p) => a + p[1], 0);
+      if (!(W > 0)) continue;
       wm += pairs.reduce((a, p) => a + p[0] * p[1], 0) / W; nh++;
-      // 99th percentile needs a real spread: pooled members if there are enough, else NBM's QMD 99th percentile, else none
-      const q = data["nbmq" + t]?.members[0].vals[si];
-      if (pairs.length >= 5) { wp += wq(pairs, 0.99); np++; } else if (q && q.w99 != null) { wp += q.w99; np++; }
+      we += pairs.reduce((a, p) => a + (p[0] > thr ? p[1] : 0), 0) / W; ne++;
+      const q = qmd(t);
+      if (pairs.length >= 5) { wp += wq(pairs, 0.99); np++; } else if (q) { wp += q.w99; np++; }
     }
-    const out = { mean: nh ? wm / nh : null, p99: np ? wp / np : null, wx: {}, si: {}, any: null, n: nh };
+    const out = { mean: nh ? wm / nh : null, p99: np ? wp / np : null, pexc: ne ? sdwR5(we / ne) : null, wsrc: nbmOnly ? "nbm" : "pool", wx: {}, si: {}, any: null, n: nh };
     out.cat = out.mean == null ? null : sdwCat(out.mean, out.p99 ?? out.mean);
     const share = (k, filt) => { let num = 0, den = 0;
       for (const s of on.filter(filt || (() => true))) { const mems = {};
@@ -1415,6 +1491,12 @@
         if (avg.length) { num += srcW(s) * avg.reduce((x, y) => x + y, 0) / avg.length; den += srcW(s); } }
       return den ? sdwR5(num / den) : null; };
     for (const k of ["p", "l", "c", "v"]) out.wx[k] = share(k);
+    // ceiling / visibility: weighted 50th percentile of every member value (each source's weight split across its members and hours)
+    const med = k => { const pairs = [];
+      for (const s of on) { const xs = []; for (const t of hours) { const d = data[s.id + t]; if (!d) continue; for (const m of d.members) { const x = m.vals[si]?.[k]; if (x != null) xs.push(x); } }
+        xs.forEach(x => pairs.push([x, (srcW(s) || 1) / xs.length])); }
+      return pairs.length ? { v: wq(pairs, 0.5), n: pairs.length } : null; };
+    const mc = med("cr"), mv = med("vr"); out.cig50 = mc ? mc.v : null; out.vis50 = mv ? mv.v : null; out.ncv = [mc ? mc.n : 0, mv ? mv.n : 0];
     if (out.wx.c == null) { const st = share("cs", s => s.kind === "om"); if (st != null) { out.wx.c = st; out.si.c = true; } }
     let a = share("any"); for (const k of ["l", "c", "v"]) if (out.wx[k] != null) a = Math.max(a ?? 0, out.wx[k]); out.any = a;
     return out;
@@ -1431,13 +1513,114 @@
     return nbmOmCache[k];
   }
   async function pbGrid(sites, vt, data){ try { await pbGridInner(sites, vt, data); } catch (e) { console.error(e); const b = $("pbGrid"); if (b) b.innerHTML = `<p class="hint">3-hour windows unavailable: ${esc(e.message)}</p>`; } }
+  /* ---- Site detail charts (shown with the 3-hour detail when a site is clicked): 10 m wind for every member, hourly
+     weather chances, and a readout of the hour under the pointer (defaults to the valid time). Same data and rules as the tables. ---- */
+  const STAT_COL = ["#3a9a5b", "#e7b416", "#cc3d31"];
+  function pbSiteHours(si, hrs, data){
+    return hrs.map(t => {
+      const e = pbEval(si, [t], data), pairs = [], bySrc = [], lines = [];
+      for (const s of PB_SRC.filter(s => s.on && s.kind !== "nbmq")) { const d = data[s.id + t]; if (!d) continue;
+        const ws = d.members.map(m => [m.id, m.vals[si]?.w]).filter(x => x[1] != null); if (!ws.length) continue;
+        ws.forEach(([id, w]) => { pairs.push([w, srcW(s) / ws.length]); lines.push([s.id + ":" + id, w]); });
+        bySrc.push([s.label.replace(/\s*\(\d+\)$/, ""), ws.reduce((a, x) => a + x[1], 0) / ws.length, ws.length]); }
+      let p10 = null, p90 = null;
+      const q = data["nbmq" + t]?.members[0]?.vals[si];
+      if (e.wsrc === "nbm" && q && q.wm != null) { const sd = (q.w99 - q.wm) / 2.326; p10 = Math.max(0, q.wm - 1.2816 * sd); p90 = q.wm + 1.2816 * sd; }
+      else if (pairs.length >= 5) { p10 = wq(pairs.slice(), 0.1); p90 = wq(pairs.slice(), 0.9); }
+      return { t, e, n: pairs.length, p10, p90, bySrc, lines };
+    });
+  }
+  function pbSiteCharts(si, name, hrs, data, vt){
+    const R = pbSiteHours(si, hrs, data); if (!R.some(r => r.n || r.e.wx.p != null)) return { html: "", R };
+    const Wd = 1000, L = 46, Rm = 14, n = hrs.length, X = i => L + (Wd - L - Rm) * i / Math.max(1, n - 1);
+    const vi = Math.max(0, hrs.indexOf(Math.floor(vt / 3.6e6) * 3.6e6));
+    const xlab = (T, B) => hrs.map((t, i) => { const d = new Date(t); if (d.getUTCHours() % 6) return "";
+        return `<line x1="${X(i)}" x2="${X(i)}" y1="${T}" y2="${B}" stroke="#223040"/>` + (d.getUTCHours() % 12 ? "" : `<text x="${X(i)}" y="${B + 16}" fill="#9fb3c8" font-size="13" text-anchor="middle">${d.getUTCDate()}/${String(d.getUTCHours()).padStart(2, "0")}Z</text>`); }).join("");
+    const path = (vals, Y) => { let d = "", pen = false; vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + X(i).toFixed(1) + "," + Y(v).toFixed(1); pen = true; }); return d; };
+    // wind chart
+    const thr = thrKt(), all = R.flatMap(r => r.lines.map(x => x[1])).concat(R.map(r => r.e.p99).filter(v => v != null));
+    const top = Math.max(20, Math.ceil((Math.max(thr, ...all) + 2) / 5) * 5), H1 = 300, T1 = 10, B1 = H1 - 44, Y1 = v => B1 - (B1 - T1) * Math.min(v, top) / top;
+    const ids = [...new Set(R.flatMap(r => r.lines.map(x => x[0])))];
+    let w = `<svg class="pbchart" viewBox="0 0 ${Wd} ${H1}" data-h="${H1}">`;
+    for (let k = 0; k <= top; k += 5) w += `<line x1="${L}" x2="${Wd - Rm}" y1="${Y1(k)}" y2="${Y1(k)}" stroke="#223040"/><text x="${L - 6}" y="${Y1(k) + 4}" fill="#9fb3c8" font-size="13" text-anchor="end">${k}</text>`;
+    w += xlab(T1, B1);
+    ids.forEach(id => { const d = path(R.map(r => { const x = r.lines.find(l => l[0] === id); return x ? x[1] : null; }), Y1); if (d) w += `<path d="${d}" fill="none" stroke="#8a99aa" stroke-opacity="${ids.length > 60 ? .28 : .45}" stroke-width="1"/>`; });
+    w += `<line x1="${L}" x2="${Wd - Rm}" y1="${Y1(thr)}" y2="${Y1(thr)}" stroke="#4aa3ff" stroke-dasharray="7 5" stroke-width="1.5"/><text x="${Wd - Rm - 4}" y="${Y1(thr) - 5}" fill="#4aa3ff" font-size="13" font-weight="700" text-anchor="end" stroke="#141a22" stroke-width="4" paint-order="stroke">${thr} KT threshold</text>`;
+    w += `<path d="${path(R.map(r => r.e.p99), Y1)}" fill="none" stroke="#ff5d5d" stroke-width="2" stroke-dasharray="6 4"/><path d="${path(R.map(r => r.e.mean), Y1)}" fill="none" stroke="#fff" stroke-width="3"/>`;
+    // wind status strip
+    const sw = (Wd - L - Rm) / Math.max(1, n - 1);
+    R.forEach((r, i) => { const c = r.e.cat; w += `<rect x="${X(i) - sw / 2}" y="${B1 + 26}" width="${sw + .5}" height="12" fill="${c == null ? "#2a3644" : STAT_COL[c]}"/>`; });
+    w += `<text x="${L - 6}" y="${B1 + 36}" fill="#9fb3c8" font-size="12" text-anchor="end">Wind</text>`;
+    w += `<line x1="${X(vi)}" x2="${X(vi)}" y1="${T1}" y2="${B1}" stroke="#fff" stroke-opacity=".55" stroke-dasharray="3 4" class="pbvalid"/><line class="pbhov" x1="0" x2="0" y1="${T1}" y2="${B1 + 38}" stroke="#ffd166" stroke-width="1.5" visibility="hidden"/></svg>`;
+    // weather chart
+    const H2 = 230, T2 = 10, B2 = H2 - 26, Y2 = v => B2 - (B2 - T2) * v / 100;
+    let x = `<svg class="pbchart" viewBox="0 0 ${Wd} ${H2}" data-h="${H2}">`;
+    [0, 20, 50, 100].forEach(k => x += `<line x1="${L}" x2="${Wd - Rm}" y1="${Y2(k)}" y2="${Y2(k)}" stroke="${k === 20 || k === 50 ? "#3a4b5e" : "#223040"}"/><text x="${L - 6}" y="${Y2(k) + 4}" fill="#9fb3c8" font-size="13" text-anchor="end">${k}%</text>`);
+    x += xlab(T2, B2);
+    const WX = [["p", "#3b8bff", "", "Precip ≤10 NM"], ["l", "#e0a800", "", "Lightning ≤10 NM"], ["c", "#a77bff", "", "Ceiling ≤500 ft"], ["cs", "#a77bff", "6 4", "Ceiling stand-in"], ["v", "#c5ced8", "", "Visibility ≤1 NM"]];
+    WX.forEach(([k, c, dash]) => { const vals = R.map(r => k === "cs" ? (r.e.si.c ? r.e.wx.c : null) : k === "c" ? (r.e.si.c ? null : r.e.wx.c) : r.e.wx[k]);
+      const d = path(vals, Y2); if (d) x += `<path d="${d}" fill="none" stroke="${c}" stroke-width="2.2"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`; });
+    x += `<line x1="${X(vi)}" x2="${X(vi)}" y1="${T2}" y2="${B2}" stroke="#fff" stroke-opacity=".55" stroke-dasharray="3 4" class="pbvalid"/><line class="pbhov" x1="0" x2="0" y1="${T2}" y2="${B2}" stroke="#ffd166" stroke-width="1.5" visibility="hidden"/></svg>`;
+    const leg = items => `<span class="pbleg">${items.map(([c, dash, t]) => `<span><i style="border-top:3px ${dash ? "dashed" : "solid"} ${c}"></i>${t}</span>`).join("")}</span>`;
+    const html = `<div class="pbcharts" data-chartsite="${si}"><div class="pbcl">
+        <h4>10 m wind, every member · ${esc(name)} ${leg([["#8a99aa", "", "Members"], ["#fff", "", "Mean"], ["#ff5d5d", "1", "99th percentile"], ["#4aa3ff", "1", "Threshold"]])}</h4>${w}
+        <h4>Hourly weather chances · ${esc(name)} ${leg(WX.map(([k, c, dash, t]) => [c, dash, t]))}</h4>${x}</div>
+      <div class="pbread" data-read></div></div>`;
+    return { html, R, vi, geo: { Wd, L, Rm, T1, B1, top, n } };
+  }
+  function pbReadout(r, name){
+    if (!r) return "";
+    const e = r.e, d = new Date(r.t), pc = v => v == null ? "–" : v + "%", kt = v => v == null ? "–" : v.toFixed(1) + " KT";
+    const badge = e.cat == null ? `<span class="pbbadge" style="background:#2a3644">–</span>` : `<span class="pbbadge" style="background:${STAT_COL[e.cat]};color:${e.cat === 1 ? "#1b1300" : "#fff"}">${SDW_CAT[e.cat]}</span>`;
+    const rows = [["Wind &gt;" + thrKt() + " KT", pc(e.pexc)], ["Precip within 10 NM", pc(e.wx.p)], ["Lightning within 10 NM", pc(e.wx.l)],
+      ["Ceiling ≤500 ft" + (e.si.c ? " (stand-in)" : ""), pc(e.wx.c)], ["Visibility ≤1 NM", pc(e.wx.v)], ["Any weather", pc(e.any)]];
+    return `<div class="pbrh"><b>${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCHours()).padStart(2, "0")}Z</b> <small>${esc(name)}</small></div>${badge}
+      <p>Mean ${kt(e.mean)}, 99th percentile ${kt(e.p99)}${r.p10 != null ? `, 10–90% ${r.p10.toFixed(1)}–${r.p90.toFixed(1)} KT` : ""} (${e.wsrc === "nbm" ? "NBM distribution" : r.n + " member" + (r.n === 1 ? "" : "s")})</p>
+      <table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("")}</table>
+      ${r.bySrc.length ? `<div class="pbrs">Mean wind by source</div><table>${r.bySrc.map(([l, v, k]) => `<tr><td>${esc(l)}${k > 1 ? ` <small>(${k})</small>` : ""}</td><td>${v.toFixed(1)} KT</td></tr>`).join("")}</table>` : ""}`;
+  }
+  function pbWireCharts(box, C, name){
+    const wrap = box.querySelector(".pbcharts"); if (!wrap || !C.R) return;
+    const f1 = v => v == null ? "" : (+v).toFixed(1), zt = t => new Date(t).toISOString().slice(0, 13) + "Z", svgs = wrap.querySelectorAll("svg.pbchart");
+    const vtd = new Date(C.R[C.vi].t), vlab = `${String(vtd.getUTCDate()).padStart(2, "0")}/${String(vtd.getUTCHours()).padStart(2, "0")}Z`; svgs.forEach(sv => sv._valid = "Valid " + vlab);
+    // copied wind chart: small "mean wind by source" readout for the valid time, in the corner with the least data (top right first)
+    if (svgs[0] && C.geo) svgs[0]._extra = cl => {
+      const r = C.R[C.vi]; if (!r || !r.bySrc.length) return;
+      const G = C.geo, NS = "http://www.w3.org/2000/svg", rowH = 17, bw = 250, bh = 26 + rowH * r.bySrc.length + 4, pad = 8;
+      const X = i => G.L + (G.Wd - G.L - G.Rm) * i / Math.max(1, G.n - 1), Y = v => G.B1 - (G.B1 - G.T1) * Math.min(v, G.top) / G.top;
+      const xr = G.Wd - G.Rm - pad - bw, xl = G.L + pad, yt = G.T1 + pad, yb = G.B1 - pad - bh;
+      const corners = [[xr, yt], [xl, yt], [xr, yb], [xl, yb]];
+      const pts = []; C.R.forEach((h, i) => { const x = X(i); h.lines.forEach(l => pts.push([x, Y(l[1])])); if (h.e.mean != null) pts.push([x, Y(h.e.mean), 5]); if (h.e.p99 != null) pts.push([x, Y(h.e.p99), 5]); });
+      const cost = ([x0, y0]) => pts.reduce((a, [x, y, w]) => a + (x >= x0 && x <= x0 + bw && y >= y0 && y <= y0 + bh ? (w || 1) : 0), 0);
+      const best = corners.reduce((b, c) => cost(c) < cost(b) ? c : b, corners[0]);
+      const g = document.createElementNS(NS, "g"); g.setAttribute("font-size", "13");
+      let inner = `<rect x="${best[0]}" y="${best[1]}" width="${bw}" height="${bh}" rx="6" fill="#0d131a" fill-opacity=".88" stroke="#3a4b5e"/>`
+        + `<text x="${best[0] + 10}" y="${best[1] + 18}" fill="#ffd166" font-weight="700">Mean wind by source · ${esc(name)} · ${vlab}</text>`;
+      r.bySrc.forEach(([l, v, k], i) => { const y = best[1] + 26 + rowH * (i + 1) - 4;
+        inner += `<text x="${best[0] + 10}" y="${y}" fill="#dbe4ee">${esc(l)}${k > 1 ? ` (${k})` : ""}</text><text x="${best[0] + bw - 10}" y="${y}" fill="#fff" font-weight="700" text-anchor="end">${v.toFixed(1)} KT</text>`; });
+      g.innerHTML = inner; cl.appendChild(g);
+    };
+    if (svgs[0]) svgs[0]._csv = () => "valid_utc,mean_kt,p99_kt,p10_kt,p90_kt,chance_above_" + thrKt() + "kt_pct,members,status\n" +
+      C.R.map(r => [zt(r.t), f1(r.e.mean), f1(r.e.p99), f1(r.p10), f1(r.p90), r.e.pexc ?? "", r.e.wsrc === "nbm" ? "NBM" : r.n, r.e.cat == null ? "" : SDW_CAT[r.e.cat]].join(",")).join("\n");
+    if (svgs[1]) svgs[1]._csv = () => "valid_utc,precip_pct,lightning_pct,ceiling_le500ft_pct,ceiling_is_standin,visibility_le1nm_pct,any_weather_pct\n" +
+      C.R.map(r => [zt(r.t), r.e.wx.p ?? "", r.e.wx.l ?? "", r.e.wx.c ?? "", r.e.si.c ? "yes" : "", r.e.wx.v ?? "", r.e.any ?? ""].join(",")).join("\n");
+    const read = wrap.querySelector("[data-read]"), show = i => { read.innerHTML = pbReadout(C.R[i], name); };
+    show(C.vi);
+    const n = C.R.length, L = 46, Rm = 14, Wd = 1000;
+    wrap.querySelectorAll("svg.pbchart").forEach(svg => {
+      svg.addEventListener("mousemove", ev => { const b = svg.getBoundingClientRect(), xv = (ev.clientX - b.left) * Wd / b.width;
+        const i = Math.max(0, Math.min(n - 1, Math.round((xv - L) / ((Wd - L - Rm) / Math.max(1, n - 1))))), xx = L + (Wd - L - Rm) * i / Math.max(1, n - 1);
+        wrap.querySelectorAll(".pbhov").forEach(l => { l.setAttribute("x1", xx); l.setAttribute("x2", xx); l.setAttribute("visibility", "visible"); }); show(i); });
+      svg.addEventListener("mouseleave", () => { wrap.querySelectorAll(".pbhov").forEach(l => l.setAttribute("visibility", "hidden")); show(C.vi); });
+    });
+  }
   async function pbGridInner(sites, vt, data){
     const seq = ++pbGridSeq, box = $("pbGrid"); if (!box) return;
     const W3 = 3 * 3.6e6, sel0 = Math.floor(vt / W3) * W3, wins = []; for (let k = -7; k <= 8; k++) wins.push(sel0 + k * W3);
     const hrs = []; wins.forEach(w => { for (let h = 0; h < 3; h++) hrs.push(w + h * 3.6e6); });
     const gd = Object.assign({}, data);
     const draw = () => {
-      if (seq !== pbGridSeq) return;
+      if (seq !== pbGridSeq) return; let charts = null;
       const ev = sites.map((p, si) => wins.map(w => pbEval(si, [w, w + 3.6e6, w + 7.2e6], gd)));
       const head = wins.map(w => { const d = new Date(w); return `<th class="${w === sel0 ? "selh" : ""}">${d.getUTCDate()}/${String(d.getUTCHours()).padStart(2,"0")}Z</th>`; }).join("");
       const c = (cls, t, title, w) => `<td class="sd ${cls}${w === sel0 ? " sel" : ""}"${title ? ` title="${title}"` : ""}>${t}</td>`;
@@ -1452,15 +1635,21 @@
         const e = ev[pbSel], rows = [
           ["Mean wind", "KT", x => x.mean == null ? ["na", "–"] : [x.cat == null ? "na" : SDW_CC[x.cat], x.mean.toFixed(1)]],
           ["99th percentile", "KT", x => x.p99 == null ? ["na", "–"] : [x.cat == null ? "na" : SDW_CC[x.cat], x.p99.toFixed(1)]],
+          ["Wind exceedance", `chance &gt;${thrKt()} KT`, x => [sdwW(x.pexc), x.pexc == null ? "–" : x.pexc + "%"]],
           ["Precip", "within 10 NM", x => [sdwW(x.wx.p), x.wx.p == null ? "–" : x.wx.p + "%"]],
           ["Lightning", "within 10 NM", x => [sdwW(x.wx.l), x.wx.l == null ? "–" : x.wx.l + "%"]],
-          ["Ceiling", "below 500 ft", x => [sdwW(x.wx.c) + (x.si.c ? " si" : ""), x.wx.c == null ? "–" : x.wx.c + "%"]],
-          ["Visibility", "below 1 SM", x => [sdwW(x.wx.v), x.wx.v == null ? "–" : x.wx.v + "%"]],
+          ["Ceiling", "at or below 500 ft", x => [sdwW(x.wx.c) + (x.si.c ? " si" : ""), x.wx.c == null ? "–" : x.wx.c + "%"]],
+          ["Visibility", "at or below 1 NM", x => [sdwW(x.wx.v), x.wx.v == null ? "–" : x.wx.v + "%"]],
+          ["Ceiling", "median of members", x => [cvCat("c", x.cig50), cvFmt("c", x.cig50)]],
+          ["Visibility", "median of members", x => [cvCat("v", x.vis50), cvFmt("v", x.vis50)]],
           ["Any weather", "checked conditions", x => [sdwW(x.any), x.any == null ? "–" : x.any + "%"]]];
         h += `<h3 class="sdh">${esc(sites[pbSel].name)}: 3-hour detail</h3><div class="sdscroll"><table class="sdt"><tr><th></th>${head}</tr>` +
           rows.map(([n, sub, f]) => `<tr><td class="sdsite">${n}<small>${sub}</small></td>` + e.map((x, i) => { const [cl, t] = f(x); return c(cl, t, "", wins[i]); }).join("") + "</tr>").join("") + "</table></div>";
+        charts = pbSiteCharts(pbSel, sites[pbSel].name, hrs, gd, vt);
+        h += charts.html;
       }
       box.innerHTML = h;
+      if (charts && charts.html) pbWireCharts(box, charts, sites[pbSel].name);
       box.querySelectorAll("[data-site]").forEach(td => td.addEventListener("click", () => { const i = +td.dataset.site; pbSel = pbSel === i ? null : i; draw(); }));
     };
     draw();
@@ -1494,16 +1683,20 @@
     { id: "td",   label: "2 m dew point", unit: "°F", def: [50, 55, "above"] },
     { id: "sky",  label: "Sky cover (Gridded LAMP)", unit: "%", scale: "pop", def: [50, 87.5, "above"], glmpOnly: true },
     { id: "p99",  label: "10 m wind, 99th percentile", unit: "KT", scale: "wind", def: [11.5, 16, "above"], blendOnly: true },
-    { id: "cigp", label: "Chance of ceiling < 500 ft", unit: "%", scale: "pop", def: [20, 50, "above"], blendOnly: true },
-    { id: "visp", label: "Chance of visibility < 1 SM", unit: "%", scale: "pop", def: [20, 50, "above"], blendOnly: true },
+    { id: "cigp", label: "Chance of ceiling ≤ 500 ft", unit: "%", scale: "pop", def: [20, 50, "above"], blendOnly: true },
+    { id: "visp", label: "Chance of visibility ≤ 1 NM", unit: "%", scale: "pop", def: [20, 50, "above"], blendOnly: true },
     { id: "any",  label: "Chance of any weather", unit: "%", scale: "pop", def: [20, 50, "above"], blendOnly: true }
   ];
-  const TS_BLEND = { ws: e => e.mean, p99: e => e.p99, pop: e => e.wx.p, tstm: e => e.wx.l, cigp: e => e.wx.c, visp: e => e.wx.v, any: e => e.any };
-  async function tsBlend(pid, t, p){
-    const sites = [p], key = p.lat + "," + p.lon, hrs = [t], data = {};
-    await Promise.all(PB_SRC.filter(s => s.on).map(async s => { const ck = s.id + t + key + "|ts";
+  const TS_BLEND = { cig: e => e.cig50 == null ? null : e.cig50 >= 20000 ? "unl" : e.cig50, vis: e => e.vis50, ws: e => e.mean, p99: e => e.p99, pw: e => e.pexc, pop: e => e.wx.p, tstm: e => e.wx.l, cigp: e => e.wx.c, visp: e => e.wx.v, any: e => e.any };
+  /* Model blend = the sources ticked under Point samples › Model sources. RRFS / HRRR ensemble = all of that model's members,
+     used for this time series only (they are not switched on for the Point samples). Same evaluation as the sample tables. */
+  const TS_ENS = { rrfsens: s => s.kind === "rrfs" || s.kind === "mem", hrrrens: s => s.kind === "hrrr" };
+  async function tsBlend(pid, t, p, ens){
+    const sites = [p], key = p.lat + "," + p.lon, hrs = [t], data = {}, list = ens ? PB_SRC.filter(TS_ENS[ens]) : PB_SRC.filter(s => s.on);
+    await Promise.all(list.map(async s => { const ck = s.id + t + key + "|ts";
       try { data[s.id + t] = await (pbCache[ck] || (pbCache[ck] = pbFetch(s, t, sites, hrs).catch(e => { delete pbCache[ck]; throw e; }))); } catch (e) {} }));
-    const v = TS_BLEND[pid](pbEval(0, [t], data)); return v == null ? null : v;
+    if (!list.some(s => data[s.id + t])) throw new Error(ens ? "no ensemble members for this hour" : "no blend sources for this hour");
+    const v = TS_BLEND[pid](pbEval(0, [t], data, ens ? list : undefined)); return v == null ? null : v;
   }
   const tsK2F = k => (k - 273.15) * 9 / 5 + 32;
   async function tsRec(model, t){
@@ -1513,20 +1706,21 @@
   // value at the single nearest grid point (or null), in display units; "unl" = no ceiling / > 20,000 ft
   async function tsValue(model, pid, t, p){
     if (model === "blend") { if (!TS_BLEND[pid]) throw new Error("not in blend"); return tsBlend(pid, t.getTime(), p); }
+    if (TS_ENS[model]) { if (!TS_BLEND[pid]) throw new Error("not in the ensemble members"); return tsBlend(pid, t.getTime(), p, model); }
     if (TS_PARAMS.find(x => x.id === pid).blendOnly) throw new Error("blend only");
     if (TS_PARAMS.find(x => x.id === pid).glmpOnly && model !== "glmp") throw new Error("Gridded LAMP only");
     if (model === "glmp") {
-      const nm = { ws: "wspd", gust: "wgst", cig: "cig", vis: "vis", pop: "pop", t: "t", td: "td", sky: "sky" }[pid]; if (!nm) throw new Error("not in GLMP");
-      const L = await glmpLocalField(nm, t); if (!L) throw new Error("no GLMP data available");
-      const k = lccIndex(L.field.grid, p.lat, p.lon); if (k < 0) return null; const v = L.field.valueAtIndex(k);
+      const nm = { ws: "wspd", gust: "wgst", cig: "cig", vis: "vis", pop: "pop", sky: "sky" }[pid]; if (!nm) throw new Error("not in Gridded LAMP");
+      const L = await glmpLocalField(nm, t, true); if (!L) throw new Error("no Gridded LAMP data found (check the Model data status under Sample points & map framing)");
+      const v = area(L.field, p, tsMode(pid));
       if (pid === "cig") return v == null || v > 6096 ? "unl" : v * 3.28084; if (v == null) return null;
-      return pid === "ws" || pid === "gust" ? v * 1.943844 : pid === "vis" ? v / 1609.34 : pid === "t" || pid === "td" ? tsK2F(v) : v;
+      return pid === "ws" || pid === "gust" ? v * 1.943844 : pid === "vis" ? v / 1609.34 : v;
     }
     if (model === "nws") { if (pid === "pw") throw new Error("NBM only"); const x = await nwsSite(p, t.getTime()); return ({ ws: x.ws, gust: x.gust, pop: x.pop, tstm: x.tstm, cig: x.cigFt, vis: x.visSm, t: x.t, td: x.td, qpf: x.qpf })[pid] ?? null; }
-    const at = (f, conv) => { const k = lccIndex(f.grid, p.lat, p.lon); if (k < 0) return null; const v = f.valueAtIndex(k); return v == null ? null : conv ? conv(v) : v; };
+    const at = (f, conv) => area(f, p, tsMode(pid), conv);
     if (model === "nbm") {
-      if (["ws", "pw", "pop", "cig"].includes(pid)) { const F = await gridFields({ id: pid }, t); const k = lccIndex(F.f.grid, p.lat, p.lon); if (k < 0) return null;
-        let v = F.f.valueAtIndex(k); if (v == null) return pid === "cig" ? "unl" : null; if (F.conv) v = F.conv(v); if (pid === "cig" && (v == null || v > 20000)) return "unl"; return v; }
+      if (["ws", "pw", "pop", "cig"].includes(pid)) { const F = await gridFields({ id: pid }, t);
+        const v = area(F.f, p, tsMode(pid), F.conv || null); if (v == null) return pid === "cig" ? "unl" : null; if (pid === "cig" && v > 20000) return "unl"; return v; }
       const re = { gust: /:GUST:10 m above ground:\d+ hour fcst:$/, t: /:TMP:2 m above ground:\d+ hour fcst:$/, td: /:DPT:2 m above ground:\d+ hour fcst:$/, vis: /:VIS:surface:\d+ hour fcst:$/ }[pid];
       if (pid === "tstm" || pid === "qpf") {
         const q = await findNbm("core", t, f => pid === "tstm" ? `:TSTM:surface:${f-1}-${f} hour acc fcst:` : `:APCP:surface:${f-1}-${f} hour acc fcst:`, 36);
@@ -1540,7 +1734,7 @@
     if (TS_PARAMS.find(x => x.id === pid).nbmOnly && model !== "nws" && model !== "glmp") throw new Error("NBM only");
     const q = await tsRec(model, t), g = async re => { const r = idxRecord(q, l => re.test(l)); return r ? cachedRange(q.url, r) : null; };
     if (pid === "ws") { const [u, v] = await Promise.all([g(/:UGRD:10 m above ground:\d+ hour fcst:/), g(/:VGRD:10 m above ground:\d+ hour fcst:/)]); if (!u || !v) return null;
-      const k = lccIndex(u.grid, p.lat, p.lon); if (k < 0) return null; const a = u.valueAtIndex(k), b = v.valueAtIndex(k); return a == null || b == null ? null : Math.hypot(a, b) * 1.943844; }
+      let s = 0, n = 0; for (const k of lccIndices(u.grid, p.lat, p.lon, R10)) { const a = u.valueAtIndex(k), b = v.valueAtIndex(k); if (a == null || b == null) continue; s += Math.hypot(a, b); n++; } return n ? s / n * 1.943844 : null; }
     if (pid === "gust") { const f = await g(/:GUST:surface:\d+ hour fcst:/); return f ? at(f, v => v * 1.943844) : null; }
     if (pid === "qpf") { const f = await g(new RegExp(`:APCP:surface:${q.f-1}-${q.f} hour acc fcst:`)); return f ? at(f, v => v / 25.4) : null; }
     if (pid === "cig") { const f = await g(/:(CEIL|HGT):cloud ceiling:\d+ hour fcst:/); if (!f) return null; const v = at(f, v => v * 3.28084); return v == null || v > 20000 ? "unl" : v; }
@@ -1548,6 +1742,8 @@
     if (pid === "t" || pid === "td") { const f = await g(pid === "t" ? /:TMP:2 m above ground:\d+ hour fcst:/ : /:DPT:2 m above ground:\d+ hour fcst:/); return f ? at(f, tsK2F) : null; }
     return null;
   }
+  // same horizontal sampling as the point samples: every grid point within 10 NM of the site
+  const tsMode = pid => ({ pop: "max", tstm: "max", qpf: "max" })[pid] || "mean";
   const VSM_TS = [0,1/16,1/8,3/16,1/4,5/16,3/8,1/2,5/8,3/4,7/8,1,9/8,5/4,11/8,3/2,13/8,7/4,15/8,2,9/4,5/2,11/4,3,4,5,6,7,8,9,10];
   function tsFmt(P, v){
     if (v == null) return "–";
@@ -1590,7 +1786,7 @@
     const vals = hrs.map(() => undefined), seq = ++tsSeq;
     const draw = () => {
       if (seq !== tsSeq) return;
-      const unitTxt = P.unit, name = `${P.label} (${unitTxt}) · ${esc(p.name)} · ${model.toUpperCase()}`;
+      const unitTxt = P.unit, name = `${P.label} (${unitTxt}) · ${esc(p.name)} · ${({ blend: "MODEL BLEND", rrfsens: "RRFS ENSEMBLE", hrrrens: "HRRR ENSEMBLE" })[model] || model.toUpperCase()}`;
       // gridded chart
       let h = `<h3 class="sdh">${name}</h3><div class="sdscroll"><table class="sdt"><tr><th></th>${hrs.map(t => { const d = new Date(t); return `<th class="${t === v0 ? "selh" : ""}">${d.getUTCDate()}/${String(d.getUTCHours()).padStart(2,"0")}Z</th>`; }).join("")}</tr>`;
       h += `<tr><td class="sdsite">${esc(P.label)}<small>${unitTxt}</small></td>` + vals.map((v, i) => { const c = v === undefined ? { bg: "#2a3644", fg: "var(--muted)" } : tsColor(P, v, mode, th);
@@ -1603,9 +1799,15 @@
       if (mode === "thresh" && isFinite(th[0])) { hi = Math.max(hi, th[0], th[1]); lo = Math.min(lo, th[0], th[1]); }
       if (hi === lo) hi = lo + 1; const pad = (hi - lo) * 0.08; if (P.unit !== "%") { hi += pad; if (["t", "td"].includes(P.id)) lo -= pad; }
       const X = i => L + (Wd - L - R) * (hrs.length === 1 ? 0.5 : i / (hrs.length - 1)), Y = v => T + (Hd - T - B) * (1 - (v - lo) / (hi - lo));
-      let svg = `<svg viewBox="0 0 ${Wd} ${Hd}" style="width:100%;height:auto;background:#141a22;border:1px solid var(--line);border-radius:6px;margin-top:10px" font-family="var(--font)">`;
+      let svg = `<svg class="tschart" viewBox="0 0 ${Wd} ${Hd}" style="width:100%;height:auto;background:#141a22;border:1px solid var(--line);border-radius:6px;margin-top:10px" font-family="var(--font)">`;
       for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); svg += `<line x1="${L}" x2="${Wd - R}" y1="${y}" y2="${y}" stroke="#2a3644"/><text x="${L - 8}" y="${y + 5}" fill="#9fb3c8" font-size="15" text-anchor="end">${P.id === "qpf" ? v.toFixed(2) : Math.round(v)}</text>`; }
-      if (P.avi && mode === "avi") (P.avi === "cig" ? [[500, "#c03fc0"], [1000, "#d0312d"], [3000, "#2f6fd6"]] : [[1, "#c03fc0"], [3, "#d0312d"], [5, "#2f6fd6"]]).forEach(([v, c]) => { if (v <= hi) svg += `<line x1="${L}" x2="${Wd - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${c}" stroke-dasharray="6 5"/>`; });
+      // flight-category boundaries, each labelled; only those inside the plotted range are drawn
+      if (P.avi && mode !== "thresh") (P.avi === "cig"
+          ? [[500, "#c03fc0", "LIFR / IFR · 500 ft"], [1000, "#d0312d", "IFR / MVFR · 1,000 ft"], [3000, "#2f6fd6", "MVFR / VFR · 3,000 ft"]]
+          : [[1, "#c03fc0", "LIFR / IFR · 1 SM"], [3, "#d0312d", "IFR / MVFR · 3 SM"], [5, "#2f6fd6", "MVFR / VFR · 5 SM"]]).forEach(([v, c, lbl]) => {
+        if (v > hi || v < lo) return; const y = Y(v);
+        svg += `<line x1="${L}" x2="${Wd - R}" y1="${y}" y2="${y}" stroke="${c}" stroke-width="1.5" stroke-dasharray="6 5"/>`
+          + `<text x="${Wd - R - 6}" y="${y - 6}" fill="${c}" font-size="15" font-weight="700" text-anchor="end" stroke="#141a22" stroke-width="4" paint-order="stroke">${lbl}</text>`; });
       else if (mode === "thresh" && isFinite(th[0])) [[th[0], "#e7b416"], [th[1], "#cc3d31"]].forEach(([v, c]) => { if (isFinite(v)) svg += `<line x1="${L}" x2="${Wd - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${c}" stroke-dasharray="6 5"/>`; });
       const vx = X(hrs.indexOf(v0)); svg += `<line x1="${vx}" x2="${vx}" y1="${T}" y2="${Hd - B}" stroke="#fff" stroke-opacity=".5"/>`;
       const ptsXY = vals.map((v, i) => v === undefined || v == null ? null : [X(i), v === "unl" ? T + 2 : Y(Math.min(v, hi))]);
@@ -1616,6 +1818,7 @@
       if (unl) svg += `<text x="${Wd - R}" y="${T + 14}" fill="#9fb3c8" font-size="13" text-anchor="end">points at top = unlimited</text>`;
       svg += `<text x="${L}" y="${Hd - 6}" fill="#9fb3c8" font-size="14">${esc(P.label)} (${unitTxt}); white line = selected valid time</text></svg>`;
       $("tsOut").innerHTML = h + svg;
+      const sv = $("tsOut").querySelector("svg.tschart"); if (sv) sv._csv = () => `valid_utc,${P.id}_${P.unit}\n` + hrs.map((t, i) => new Date(t).toISOString().slice(0, 13) + "Z," + (vals[i] == null ? "" : vals[i] === "unl" ? "unlimited" : typeof vals[i] === "number" ? +vals[i].toFixed(3) : "")).join("\n");
     };
     draw();
     for (let i = 0; i < hrs.length; i++) {
@@ -1629,32 +1832,34 @@
     const sites = boardSites(), seq = ++pbSeq, v0 = Math.floor(vt / 3.6e6) * 3.6e6, H1 = 3.6e6, hrs = [v0 - H1, v0, v0 + H1];
     const key = sites.map(p => p.lat + "," + p.lon).join(";");
     // source checkboxes
-    $("pbSrc").innerHTML = [...new Set(PB_SRC.map(s => s.group))].map(g => `<div class="pbgrp"><b>${esc(g)}</b>` + PB_SRC.filter(s => s.group === g).map(s =>
-      `<label class="pbsrc"><input type="checkbox" data-src="${s.id}" ${s.on ? "checked" : ""}> ${esc(s.label)} <small>${s.gw ? "" : "w " + s.weight + " · "}${s.size}</small> <span class="chip" data-stat="${s.id}"></span></label>`).join("") + "</div>").join("");
-    $("pbSrc").querySelectorAll("input").forEach(cb => cb.addEventListener("change", () => {
-      PB_SRC.find(s => s.id === cb.dataset.src).on = cb.checked;
-      try { store.set("pbSrcOn2", Object.fromEntries(PB_SRC.map(s => [s.id, s.on]))); } catch (e) {}
-      pbRender(); }));
+    const nOn = PB_SRC.filter(s => s.on).length;
+    $("pbSrc").innerHTML = `<div class="pbtools"><span>${nOn} of ${PB_SRC.length} sources on</span><button type="button" data-all="1">Add all</button><button type="button" data-all="0">Remove all</button></div>`
+      + `<div class="pbgrid">` + [...new Set(PB_SRC.map(s => s.group))].map(g => { const L = PB_SRC.filter(s => s.group === g), k = L.filter(s => s.on).length;
+        return `<div class="pbgrp"><div class="pbgh"><b>${esc(g)}</b><small>${k}/${L.length}</small><button type="button" data-grp="${esc(g)}" data-v="1" title="Add all in this group">All</button><button type="button" data-grp="${esc(g)}" data-v="0" title="Remove all in this group">None</button></div>`
+          + L.map(s => `<label class="pbsrc"><input type="checkbox" data-src="${s.id}" ${s.on ? "checked" : ""}><span class="pbl">${esc(s.label)}</span><small>${s.gw ? "" : "w" + s.weight + " · "}${s.size}</small><span class="chip" data-stat="${s.id}"></span></label>`).join("") + "</div>"; }).join("") + `</div>`;
+    const pbSave = () => { try { store.set("pbSrcOn2", Object.fromEntries(PB_SRC.map(s => [s.id, s.on]))); } catch (e) {} pbRender(); };
+    $("pbSrc").querySelectorAll("input[data-src]").forEach(cb => cb.addEventListener("change", () => { PB_SRC.find(s => s.id === cb.dataset.src).on = cb.checked; pbSave(); }));
+    $("pbSrc").querySelectorAll("button[data-all]").forEach(b => b.addEventListener("click", () => { PB_SRC.forEach(s => s.on = b.dataset.all === "1"); pbSave(); }));
+    $("pbSrc").querySelectorAll("button[data-grp]").forEach(b => b.addEventListener("click", () => { PB_SRC.forEach(s => { if (s.group === b.dataset.grp) s.on = b.dataset.v === "1"; }); pbSave(); }));
     const data = {};
     const LEGEND = `<div class="sdleg"><span><i class="s"></i>Wind GO, or weather under 20%</span><span><i class="m"></i>Wind assessment required, or weather 20–50%</span><span><i class="v"></i>Wind NO-GO, or weather over 50%</span><span><i class="fvfr"></i>VFR</span><span><i class="fmvfr"></i>MVFR</span><span><i class="fifr"></i>IFR</span><span><i class="flifr"></i>LIFR</span><span><i class="m si"></i>Ceiling stand-in</span></div>`;
     const draw = () => {
       if (seq !== pbSeq) return;
       const table = (hs, label, tag, leg) => {
-        let h = `<h3 class="sdh">${label}: ${zH(new Date(hs[0]))} to ${zH(new Date(hs[hs.length - 1]))}</h3>${leg ? LEGEND : ""}<div class="sdscroll"><table class="sdt"><tr><th>Site</th><th>Wind</th><th>Mean / p99 (KT)</th><th>Precip<small>≤10 NM</small></th><th>Lightning<small>≤10 NM</small></th><th>Ceiling<small>chance &lt;500 ft</small></th><th>Ceiling<small>NBM, lowest ≤10 NM</small></th><th>Visibility<small>chance &lt;1 SM</small></th><th>Visibility<small>NBM, lowest ≤10 NM</small></th><th>Any weather</th></tr>`;
+        let h = `<h3 class="sdh">${label}: ${zH(new Date(hs[0]))} to ${zH(new Date(hs[hs.length - 1]))}</h3>${leg ? LEGEND : ""}<div class="sdscroll"><table class="sdt"><tr><th>Site</th><th>Wind</th><th>Mean / p99 (KT)</th><th>Wind<small>chance &gt;${thrKt()} KT</small></th><th>Precip<small>≤10 NM</small></th><th>Lightning<small>≤10 NM</small></th><th>Ceiling<small>chance ≤500 ft</small></th><th>Ceiling<small>median of members</small></th><th>Visibility<small>chance ≤1 NM</small></th><th>Visibility<small>median of members</small></th><th>Any weather</th></tr>`;
         sites.forEach((p, si) => { const e = pbEval(si, hs, data), cell = (c, t) => `<td class="sd ${c}">${t}</td>`, wx = k => `<td class="sd ${sdwW(e.wx[k])}${e.si[k] ? " si" : ""}"${e.si[k] ? ' title="Stand-in from global ensembles (cloud base from T−Td and low cloud), lower confidence"' : ""}>${e.wx[k] == null ? "–" : e.wx[k] + "%"}</td>`;
-          h += `<tr><td class="sdsite">${esc(p.name)}</td>` + cell(e.cat == null ? "na" : SDW_CC[e.cat], e.cat == null ? "–" : SDW_CAT[e.cat]) + cell("pv", e.mean == null ? "–" : `${e.mean.toFixed(1)} / ${e.p99 == null ? "–" : e.p99.toFixed(1)}`) +
-            wx("p") + wx("l") + wx("c") + `<td class="sd pv" data-cv="${tag}-c-${si}">…</td>` + wx("v") + `<td class="sd pv" data-cv="${tag}-v-${si}">…</td>` + cell(sdwW(e.any), e.any == null ? "–" : e.any + "%") + "</tr>"; });
+          h += `<tr><td class="sdsite">${esc(p.name)}</td>` + cell(e.cat == null ? "na" : SDW_CC[e.cat], e.cat == null ? "–" : SDW_CAT[e.cat]) + `<td class="sd pv" title="${e.wsrc === "nbm" ? "NBM quantile-mapped wind distribution" : "Pooled members, weighted by source"}">${e.mean == null ? "–" : `${e.mean.toFixed(1)} / ${e.p99 == null ? "–" : e.p99.toFixed(1)}`}</td>` +
+            cell(sdwW(e.pexc), e.pexc == null ? "–" : e.pexc + "%") + wx("p") + wx("l") + wx("c") + `<td class="sd ${cvCat("c", e.cig50)}" title="${e.ncv[0]} member values">${cvFmt("c", e.cig50)}</td>` + wx("v") + `<td class="sd ${cvCat("v", e.vis50)}" title="${e.ncv[1]} member values">${cvFmt("v", e.vis50)}</td>` + cell(sdwW(e.any), e.any == null ? "–" : e.any + "%") + "</tr>"; });
         return h + "</table></div>";
       };
       box.innerHTML = table([v0, v0 + H1], "Valid time to +1 h", "p1") + table(hrs, "Valid time ±1 h (3 h)", "pm1", true) +
-        `<details class="howto"><summary>How this is made</summary><p class="hint">Built on this page from the same model set as Splashdown Weather, each queried live from its public source: HRRR time-lagged (NOAA AWS), RRFS deterministic and members in place of the retired HREF/NAM, NBM probabilities and wind, REFS and Gridded LAMP ceiling/visibility probabilities, GFS MOS and LAMP at the nearest coastal station (Iowa Environmental Mesonet), and the ECMWF, AIFS, GEFS, ICON and GEM ensembles (Open-Meteo). Gridded fields are sampled within 10 NM (wind: area mean; precip and lightning: anywhere within 10 NM; ceiling and visibility: area mean); MOS and Open-Meteo are point values. Hi-res precip = 1 km reflectivity ≥ 20 dBZ (HRRR) or 1-h precip > 0.01 in; lightning = explicit lightning output and NBM thunder only. Where no direct ceiling source covers the hours, the ceiling chance falls back to a global-ensemble stand-in (cloud base ≈ 125 m per °C of T−Td below 500 ft with ≥70% low cloud), hatched. Each value is the average over the table's hours. Wind: hourly weighted mean and 99th percentile of all members (NBM contributes quantiles from its QMD mean and spread), looked up in the failure-risk table. Weather: share of each source's members meeting the condition (probabilities used directly), weight-averaged across sources, rounded to 5%. Raw ceiling and visibility: lowest NBM value within 10 NM, averaged over the hours, METAR-rounded and coloured by flight category.</p></details>`;
-      pbCigVis(vt, sites);
+        `<details class="howto"><summary>How this is made</summary><p class="hint">Ceiling and visibility chances use ceiling ≤ 500 ft and visibility ≤ 1 NM. Model runs and members count directly against those limits; NBM, RRFS-ensemble and Gridded LAMP only publish visibility probabilities at fixed thresholds (1 SM, then 2 SM, 3200 m or 3 SM), so the ≤ 1 NM chance is interpolated between the two nearest; MOS visibility category 3 (1 to 2 SM) counts as 20%. Built on this page from the same model set as Splashdown Weather, each queried live from its public source: HRRR time-lagged (NOAA AWS), RRFS deterministic and members in place of the retired HREF/NAM, NBM probabilities and wind, REFS and Gridded LAMP ceiling/visibility probabilities, GFS MOS and LAMP at the nearest coastal station (Iowa Environmental Mesonet), and the ECMWF, AIFS, GEFS, ICON and GEM ensembles (Open-Meteo). Gridded fields are sampled within 10 NM (wind: area mean; precip and lightning: anywhere within 10 NM; ceiling and visibility: area mean); MOS and Open-Meteo are point values. Hi-res precip = 1 km reflectivity ≥ 20 dBZ (HRRR) or 1-h precip > 0.01 in; lightning = explicit lightning output and NBM thunder only. Where no direct ceiling source covers the hours, the ceiling chance falls back to a global-ensemble stand-in (cloud base ≈ 125 m per °C of T−Td at or below 500 ft with ≥70% low cloud), hatched. Each value is the average over the table's hours. Wind, each hour: when NBM is the only wind source switched on, the mean, 99th percentile and chance of exceeding the threshold come straight from NBM's own quantile-mapped wind distribution; otherwise every member's 10 m wind at the site is pooled, with each source's weight split across its members, giving a weighted mean, weighted 99th percentile and the weighted share of members above the threshold (with fewer than 5 members the 99th percentile uses NBM's value if loaded). Mean and 99th percentile are looked up in the failure-risk table. Weather: share of each source's members meeting the condition (probabilities used directly), weight-averaged across sources, rounded to 5%. Ceiling and visibility values: the 50th percentile (weighted median) of every selected member's value at the site (each member averaged over the grid points within 10 NM) across the table's hours, with each source's weight split across its members. Members come from HRRR, RRFS, NBM and Gridded LAMP's own ceiling and visibility, the NWS Forecast, and GFS MOS / LAMP categories (category middle). The values are METAR-rounded and coloured by flight category; hover a cell for the number of member values.</p></details>`;
     };
     draw();
     pbGrid(sites, vt, data);
     const jobs = [];
     for (const s of PB_SRC.filter(s => s.on)) {
-      pbStat[s.id] = "loading"; const chip = () => { const c = document.querySelector(`[data-stat="${s.id}"]`); if (c) { c.textContent = pbStat[s.id]; c.className = "chip " + (/^ok/.test(pbStat[s.id]) ? "ok" : /loading/.test(pbStat[s.id]) ? "partial" : "error"); } };
+      pbStat[s.id] = "loading"; const chip = () => { const c = document.querySelector(`[data-stat="${s.id}"]`); if (c) { c.textContent = pbStat[s.id]; c.title = pbStat[s.id]; c.className = "chip " + (/^ok/.test(pbStat[s.id]) ? "ok" : /loading/.test(pbStat[s.id]) ? "partial" : "error"); } };
       chip();
       jobs.push((async () => {
         let ok = 0, err = "", cyc = null, note = "";
@@ -1667,9 +1872,18 @@
         pbStat[s.id] = ok ? `ok${cyc ? " · " + String(cyc.getUTCHours()).padStart(2,"0") + "Z run" : ""}${ok < hrs.length ? ` · ${ok}/${hrs.length} h` : ""}${note ? " · " + note : ""}` : (err || "no data"); chip();
       })());
     }
-    await Promise.all(jobs); if (seq === pbSeq) { draw(); pbGrid(sites, vt, data); PB_SRC.forEach(s => { const c = document.querySelector(`[data-stat="${s.id}"]`); if (c && s.on) { c.textContent = pbStat[s.id]; c.className = "chip " + (/^ok/.test(pbStat[s.id]) ? "ok" : "error"); } }); }
+    await Promise.all(jobs); if (seq === pbSeq) { lastPull = Date.now(); updateNotices(); draw(); pbGrid(sites, vt, data); PB_SRC.forEach(s => { const c = document.querySelector(`[data-stat="${s.id}"]`); if (c && s.on) { c.textContent = pbStat[s.id]; c.title = pbStat[s.id]; c.className = "chip " + (/^ok/.test(pbStat[s.id]) ? "ok" : "error"); } }); }
   }
-  // raw NBM ceiling / visibility: lowest within 10 NM, averaged over the table hours
+  // median ceiling (ft, ≥ 20,000 = unlimited) / visibility (SM): METAR-style text and flight-category colour
+  const VSM_ALL = [0,1/16,1/8,3/16,1/4,5/16,3/8,1/2,5/8,3/4,7/8,1,9/8,5/4,11/8,3/2,13/8,7/4,15/8,2,9/4,5/2,11/4,3,4,5,6,7,8,9,10];
+  function cvFmt(k, v){
+    if (v == null) return "–";
+    if (k === "c") { if (v >= 20000) return "Unlimited"; const r = v < 5000 ? 100 : v < 10000 ? 500 : 1000; let q = Math.round(v / r) * r; if (v < 5000 && q > 5000) q = 5000; return (q < 100 ? "000" : q.toLocaleString("en-US")) + " FT"; }
+    if (v > 10) return "10+ SM"; const q = VSM_ALL.reduce((b, x) => Math.abs(x - v) < Math.abs(b - v) ? x : b, 0), w = Math.floor(q + 1e-9), r = Math.round((q - w) * 16);
+    if (!r) return w + " SM"; let n = r, d = 16; while (n % 2 === 0) { n /= 2; d /= 2; } return (w ? w + " " : "") + n + "/" + d + " SM";
+  }
+  const cvCat = (k, v) => v == null ? "na" : k === "c" ? (v > 3000 ? "fvfr" : v >= 1000 ? "fmvfr" : v >= 500 ? "fifr" : "flifr") : (v > 5 ? "fvfr" : v >= 3 ? "fmvfr" : v >= 1 ? "fifr" : "flifr");
+  // (older) raw NBM ceiling / visibility: lowest within 10 NM, averaged over the table hours
   async function pbCigVis(vt, sites){
     const res = await Promise.all([-1, 0, 1].map(o => { const t = new Date(vt.getTime() + o * 3.6e6), k = "cv" + t.toISOString() + JSON.stringify(sites.map(p => [p.lat, p.lon]));
       return (sdwCV[k] || (sdwCV[k] = sampleCigVisArea(sites, t).catch(() => { delete sdwCV[k]; return null; }))); }));
@@ -1700,7 +1914,7 @@
     const sites = d.sites.map((s, si) => ({ s, si })).sort((x, y) => rank(x.s) - rank(y.s));
     const table = (t0, t1, label, key) => {
       let h = `<h3 class="sdh">${label}: ${zH(new Date(t0 * 1000))} to ${zH(new Date(t1 * 1000))}</h3>
-      <div class="sdscroll"><table class="sdt"><tr><th>Site</th><th>Wind</th><th>Mean / p99 (KT)</th><th>Precip<small>≤10 NM</small></th><th>Lightning<small>≤10 NM</small></th><th>Ceiling<small>chance &lt;500 ft</small></th><th>Ceiling<small>NBM, lowest ≤10 NM</small></th><th>Visibility<small>chance &lt;1 SM</small></th><th>Visibility<small>NBM, lowest ≤10 NM</small></th><th>Any weather</th><th>Marine layer<small>awareness</small></th></tr>`;
+      <div class="sdscroll"><table class="sdt"><tr><th>Site</th><th>Wind</th><th>Mean / p99 (KT)</th><th>Precip<small>≤10 NM</small></th><th>Lightning<small>≤10 NM</small></th><th>Ceiling<small>chance ≤500 ft</small></th><th>Ceiling<small>NBM, lowest ≤10 NM</small></th><th>Visibility<small>chance ≤1 NM</small></th><th>Visibility<small>NBM, lowest ≤10 NM</small></th><th>Any weather</th><th>Marine layer<small>awareness</small></th></tr>`;
       sites.forEach(({ s, si }) => {
         const e = sdwEval(s.id, t0, t1 + H1);
         const cC = `<td class="sd pv" data-cv="${key}-c-${si}">…</td>`, cV = `<td class="sd pv" data-cv="${key}-v-${si}">…</td>`;
@@ -2199,21 +2413,24 @@
   const isCig = m => m.disc === 0 && m.cat === 6 && m.num === 13, isVis = m => m.disc === 0 && m.cat === 19 && m.num === 0;
   const isProb = m => m.tmpl === 5 || m.tmpl === 9;
   /* Pre-processed GLMP published next to this page (glmp/latest.json + glmp/<field>_fPPP.bin[.gz]), used if present.
-     Fields: cig, vis (m) · wspd, wgst (m/s) · t, td (K) · sky, pop, cigp2, visp2 (%). Cells are uint16 × scale, 65535 = missing. */
+     Fields: cig, vis (m) · wspd, wgst (m/s) · sky, pop, cigp2, visp2 (%). Cells are uint16 × scale, 65535 = missing. */
   let glmpLocalMeta = null, glmpLocalAt = 0, glmpLocalUrl = "glmp/"; const glmpLocalBins = {};
   // where the files live: <Model data URL>/glmp/ (box under "Sample points & map framing", or dataUrl in the settings file), else glmp/ next to the page
   const glmpFilesBases = () => { const u = dataUrl(); return u ? [...new Set([u + "glmp/", "glmp/"])] : ["glmp/"]; };
-  async function glmpLocalMetaGet(){
-    if (glmpLocalMeta !== null && Date.now() - glmpLocalAt < 10 * 60e3) return glmpLocalMeta;
-    glmpLocalMeta = false;
-    for (const b of glmpFilesBases()) { try { const r = await fetch(b + "latest.json", { cache: "no-store" }); if (r.ok) { glmpLocalMeta = await r.json(); glmpLocalUrl = b; break; } } catch (e) {} }
-    glmpLocalAt = Date.now(); return glmpLocalMeta;
+  // one shared lookup: callers that arrive while it is in flight wait for the same answer instead of seeing "not found"
+  function glmpLocalMetaGet(){
+    if (glmpLocalMeta && Date.now() - glmpLocalAt < 10 * 60e3) return glmpLocalMeta;
+    glmpLocalAt = Date.now();
+    return (glmpLocalMeta = (async () => {
+      for (const b of glmpFilesBases()) { try { const r = await fetch(b + "latest.json", { cache: "no-store" }); if (r.ok) { const m = await r.json(); glmpLocalUrl = b; return m; } } catch (e) {} }
+      glmpLocalAt = 0; return false; })());     // not found: ask again next time
   }
   // field: cig (m) | vis (m) | wspd (m/s) | pop | cigp2 | visp2 (%). Nearest available hour (±2 h) if the exact one is missing.
-  async function glmpLocalField(name, vt){
+  async function glmpLocalField(name, vt, exact){
     const m = await glmpLocalMetaGet(); if (!m || !m.fields[name]) return null;
     const fd = m.fields[name], cyc = new Date(m.cycle), f0 = Math.round((vt - cyc) / 3.6e6);
-    const f = [0, 1, -1, 2, -2].map(o => f0 + o).find(x => fd.hours.includes(x)); if (f == null) return null;
+    const f = (exact ? [0] : [0, 1, -1, 2, -2]).map(o => f0 + o).find(x => fd.hours.includes(x));
+    if (f == null) { if (exact) throw new Error(f0 < 1 ? "before this LAMP run" : "beyond this LAMP run"); return null; }
     const gz = m.enc === "gzip", url = `${glmpLocalUrl}${name}_f${String(f).padStart(3, "0")}.bin${gz ? ".gz" : ""}`;
     if (!glmpLocalBins[url]) glmpLocalBins[url] = fetch(url, { cache: "no-store" }).then(r => {
         if (!r.ok) throw new Error("HTTP " + r.status);
@@ -2226,7 +2443,7 @@
   }
   async function glmpStatus(){
     const el = $("glmpStatus"); if (!el) return; const m = await glmpLocalMetaGet();
-    if (!m) { el.innerHTML = 'Pre-processed GLMP files: <b>not found</b>. Set the Model data URL under "Sample points &amp; map framing", or the maps fall back to the GLMP data URL below, if one is entered.'; return; }
+    if (!m) { el.innerHTML = 'Pre-processed GLMP files: <b>not found</b>. Set the Model data URL under "Sample points &amp; map framing", or open "Fallback source" below.'; return; }
     const ageH = (Date.now() - new Date(m.cycle)) / 3.6e6, col = { ok: "#5fd38d", partial: "#ffd166", missing: "#ff6b6b" };
     const fl = Object.entries(m.fields).map(([k, v]) => `<span style="color:${col[v.status]}">${k}${v.status === "ok" ? "" : " (" + v.status + (v.hours.length ? ", " + v.hours.length + " h" : "") + ")"}</span>`).join(" · ");
     const thr = ["cigp2", "visp2"].filter(k => m.fields[k] && m.fields[k].threshold_m).map(k => `${k === "cigp2" ? "ceiling" : "visibility"} below ${k === "cigp2" ? Math.round(m.fields[k].threshold_m * 3.28084) + " ft" : (m.fields[k].threshold_m / 1609.344).toFixed(2) + " SM"}`).join(", ");
@@ -2255,18 +2472,19 @@
   }
   // GLMP ceiling < 500 ft / vis < 1 mile probabilities for the point board: hourly file if it carries them, else fcsts_cigp2 / visp2
   async function glmpProbs(T){
-    { const [c, v] = await Promise.all([glmpLocalField("cigp2", T), glmpLocalField("visp2", T)]);
-      if (c || v) return { c: c ? c.field : null, v: v ? v.field : null, cyc: (c || v).cyc }; }
+    { const [c, v, v3, cd, vd] = await Promise.all(["cigp2", "visp2", "visp3", "cig", "vis"].map(n => glmpLocalField(n, T)));
+      if (c || v) return { c: c ? c.field : null, v: v ? v.field : null, v3: v3 ? v3.field : null, cd: cd ? cd.field : null, vd: vd ? vd.field : null, cyc: (c || v).cyc }; }
     const near = (x, v) => x.thr != null && Math.abs(x.thr - v) < v * 0.1;
-    let qc, qv, mc, mv;
-    try { const q = await findGlmp(T); mc = pick(q.g.msgs, q.f, x => isCig(x) && isProb(x) && near(x, 152.4)); mv = pick(q.g.msgs, q.f, x => isVis(x) && isProb(x) && near(x, 1609.34)); if (mc) qc = q; if (mv) qv = q; } catch (e) { if (/blocks/.test(e.message)) throw e; }
+    let qc, qv, mc, mv, mv3;
+    try { const q = await findGlmp(T); mc = pick(q.g.msgs, q.f, x => isCig(x) && isProb(x) && near(x, 152.4)); mv = pick(q.g.msgs, q.f, x => isVis(x) && isProb(x) && near(x, 1609.34)); mv3 = pick(q.g.msgs, q.f, x => isVis(x) && isProb(x) && near(x, 4828.03)); if (mc) qc = q; if (mv) qv = q; } catch (e) { if (/blocks/.test(e.message)) throw e; }
     if (!mc) { try { qc = await findGlmp(T, "cigp2"); mc = pick(qc.g.msgs, qc.f, x => isCig(x) && Math.abs(x.fh - qc.f) < 0.5); } catch (e) {} }
     if (!mv) { try { qv = await findGlmp(T, "visp2"); mv = pick(qv.g.msgs, qv.f, x => isVis(x) && Math.abs(x.fh - qv.f) < 0.5); } catch (e) {} }
     if (!mc && !mv) throw new Error("no GLMP ceiling/visibility probabilities for this hour");
-    return { c: mc ? glmpField(qc.g, mc) : null, v: mv ? glmpField(qv.g, mv) : null, cyc: (qc || qv).cyc };
+    return { c: mc ? glmpField(qc.g, mc) : null, v: mv ? glmpField(qv.g, mv) : null, v3: mv3 && qv ? glmpField(qv.g, mv3) : null, cyc: (qc || qv).cyc };
   }
   let glmpSeq = 0;
   async function glmpRender(pts, vt, W, H, products){
+    products = products.filter(p => p.id !== "pw");      // Gridded LAMP has no wind-exceedance probability
     const seq = ++glmpSeq, box = $("glmpCards"); box.innerHTML = ""; glmpStatus();
     const base = loadBasemap(pts).catch(() => null);
     for (const [idx, prod] of products.entries()) {
@@ -2309,7 +2527,8 @@
   }
   // flatten canvas + labels + banner into one PNG
   async function savePng(card, W, H, id){
-    const out = document.createElement("canvas"); out.width = W; out.height = H; const ctx = out.getContext("2d");
+    const LEG = 104, noLeg = !($("pngLegend") && $("pngLegend").checked);     // legend band height drawn by drawGrid
+    const out = document.createElement("canvas"); out.width = W; out.height = noLeg ? H - LEG : H; const ctx = out.getContext("2d");
     ctx.drawImage(card.querySelector("canvas"), 0, 0);
     const svg = card.querySelector(".overlay svg");
     if (svg) await new Promise(res => { const im = new Image(); im.onload = () => { ctx.drawImage(im, 0, 0, W, H); res(); }; im.onerror = res;
@@ -2319,7 +2538,7 @@
       ctx.fillStyle = "rgba(8,12,18,.8)"; ctx.fillRect(0, 0, W, 48); ctx.fillStyle = "#fff"; ctx.font = `600 26px ${ff}`; ctx.textAlign = "left";
       ctx.fillText([...b.children].map(x => x.textContent).join("   "), 10, 33);
     }
-    const a = document.createElement("a"); a.download = `NBM_${id}_${(validTime() || new Date()).toISOString().slice(0,13).replace(/[-T]/g,"")}Z.png`; a.href = out.toDataURL("image/png"); a.click();
+    const a = document.createElement("a"); a.download = `${(card.closest("#rrfsCards") ? "RRFS" : card.closest("#glmpCards") ? "GLMP" : "NBM")}_${id}${noLeg ? "" : "_legend"}_${(validTime() || new Date()).toISOString().slice(0,13).replace(/[-T]/g,"")}Z.png`; a.href = out.toDataURL("image/png"); a.click();
   }
 
   /* ---------- rendering ---------- */
@@ -2394,7 +2613,7 @@
     const use1h = leadH <= Number(cal.max1h);
     return [
       popProduct(use1h ? 1 : 6, vt),
-      { id: "ws", tpl: "ws", title: cal.vectors === "1" ? "Mean 10 m wind speed (with wind vectors)" : "Mean 10 m wind speed (shaded, no barbs or particles)", short: "Mean 10 m wind" },
+      { id: "ws", tpl: "ws", title: cal.vectors === "1" ? "Mean 10 m wind speed (with wind vectors)" : "Mean 10 m wind speed", short: "Mean 10 m wind" },
       { id: "pw", tpl: "pw", title: `Probability of 10 m wind > ${thrKt()} KT`, short: `P(wind > ${thrKt()} KT)`, }
       ,{ id: "cig", tpl: "ws", tplLayer: "cig", title: "NBM mean ceiling height AGL (ft)", short: "Mean ceiling (ft)" }
     ];
@@ -2445,7 +2664,7 @@
     if (!samplesOnly) { $("snipHead").textContent = "Valid " + zlong(vt); delete $("snipHead").dataset.run; }
     $("status").innerHTML =
       `<span>Valid <b>${zlong(vt)}</b></span><span>Lead ≈ <b>${leadH >= 0 ? "+" : ""}${leadH} h</b> from now</span>` +
-      `<span>Dataset <b>NBM-CONUS</b></span><span>Points <b>${pts.length}</b></span>` +
+      `<span>Points <b>${pts.length}</b></span>` +
       `<span>Loaded <b>${stamp.toISOString().slice(11,16).replace(":","")}Z</b></span>`;
 
     samples = new Array(pts.length).fill(null);
@@ -2481,28 +2700,23 @@
 
     if (!samplesOnly || ecRun) {
     if (!samplesOnly) {
-    // ---- WPC fronts / sea-level pressure: frame nearest the valid time, west-coast crop ----
-    const wpcCard = (() => {
-      const c = document.createElement("section");
-      c.className = "card"; c.style.width = "560px"; c.style.maxWidth = "100%";
-      c.innerHTML = `<div class="card-head"><h2>WPC fronts &amp; sea-level pressure</h2><span class="meta" data-meta></span><div class="spacer"></div><a class="btn hide-snip" data-open target="_blank" rel="noopener">Open ↗</a></div><div data-ecbody></div>`;
-      const sc = $("synCards"); sc.innerHTML = ""; sc.appendChild(c); return c;
-    })();
+    // ---- WPC fronts / sea-level pressure: the frame nearest the valid time, plus one before and two after; image only ----
     {
-      const fr = wpcFrames(), best = fr.slice().sort((a, b) => Math.abs(a.valid - vt) - Math.abs(b.valid - vt))[0];
-      const diff = Math.round((best.valid - vt) / 3.6e6);
-      const pick = (f) => {
-        const k = 560 / f.crop[2];
-        wpcCard.querySelector("[data-ecbody]").innerHTML =
-          pngCrop(f.url + "?t=" + Date.now(), f.nw, f.nh, f.crop[0], f.crop[1], f.crop[2], f.crop[3], 560, "")
-          + `<div style="background:#fff;padding:4px 0 0">${pngCrop(f.url + "?t=" + Date.now(), f.nw, f.nh, f.stamp[0], f.stamp[1], f.stamp[2], f.stamp[3], 560, "")}</div>
-             <div class="ecfoot">WPC ${esc(f.name)} · nominal valid ${zH(f.valid)}${diff ? ` (nearest to ${zH(vt)}, ${diff > 0 ? "+" : ""}${diff} h)` : ""}. Check the valid time printed in WPC's own stamp above. Source: NOAA/NWS Weather Prediction Center.</div>`;
-        wpcCard.querySelector("[data-meta]").textContent = `WPC ${f.name}`;
-        wpcCard.querySelector("[data-open]").href = f.url;
-      };
-      pick(best);
+      const sc = $("synCards"); sc.innerHTML = "";
+      const fr = wpcFrames().sort((a, b) => a.valid - b.valid);
+      const bi = fr.reduce((b, f, i) => Math.abs(f.valid - vt) < Math.abs(fr[b].valid - vt) ? i : b, 0);
+      const pick = fr.slice(Math.max(0, bi - 1), bi + 3), DW = 460;
+      pick.forEach(f => {
+        const cur = f === fr[bi], c = document.createElement("section"), dh = Math.round((f.valid - vt) / 3.6e6);
+        c.className = "card" + (cur ? " syncur" : ""); c.style.width = DW + "px"; c.style.maxWidth = "100%";
+        // WPC's own printed valid-time stamp sits above the chart (cut from the same image, so it always matches the picture)
+        const u = f.url + "?t=" + Date.now();
+        c.innerHTML = `<div class="card-head"><h2>WPC surface chart</h2><div class="spacer"></div><a class="btn hide-snip" target="_blank" rel="noopener" href="${esc(f.url)}">Open ↗</a></div>
+          <div class="synstamp">${pngCrop(u, f.nw, f.nh, f.stamp[0], f.stamp[1], f.stamp[2], f.stamp[3], DW, "")}</div>
+          <div>${pngCrop(u, f.nw, f.nh, f.crop[0], f.crop[1], f.crop[2], f.crop[3], DW, "")}</div>`;
+        sc.appendChild(c);
+      });
     }
-
     } // end WPC
     if (ecRun) { const cards = $("ecCards"); cards.innerHTML = ""; $("ecStamp").textContent = `Last refreshed ${new Date().toISOString().slice(11,16).replace(":","")}Z for valid ${zH(vt)}`;
     // ---- ECMWF: ceiling map + one visibility meteogram per point; base time nearest the NBM cycle used ----
@@ -2677,6 +2891,76 @@
   }
 
   // copy every table in the given containers as tab-separated text (headings kept as lines)
+  /* ---- Export under every table and chart: an image exactly as drawn on screen, or the numbers as CSV.
+     Copies to the clipboard; if the browser refuses, the file is downloaded instead. ---- */
+  const xTitle = el => { let n = el.closest(".sdscroll") || el; for (let p = n.previousElementSibling; p; p = p.previousElementSibling) if (/^H[2-4]$/.test(p.tagName)) { const c = p.cloneNode(true); c.querySelectorAll(".pbleg").forEach(x => x.remove()); return c.textContent.replace(/\s+/g, " ").trim(); } return "Dragon Splashdown Support"; };
+  const xName = t => t.replace(/[^\w.-]+/g, "_").replace(/_+/g, "_").slice(0, 80);
+  function xDownload(blob, name){ const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+  function xFlash(btn, txt){ const o = btn.textContent; btn.textContent = txt; setTimeout(() => btn.textContent = o, 1600); }
+  const csvCell = v => { v = String(v ?? "").replace(/\s*\n\s*/g, " ").trim(); return /[",]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+  function tableCSV(t){ return [...t.rows].map(r => [...r.cells].map(c => csvCell(c.innerText)).join(",")).join("\n"); }
+  const pageFont = () => getComputedStyle(document.body).fontFamily;
+  function tableCanvas(t, title){
+    const sc = 2, rb = t.getBoundingClientRect(), head = 34, pad = 8, cv = document.createElement("canvas");
+    cv.width = Math.ceil((rb.width + pad * 2) * sc); cv.height = Math.ceil((rb.height + head + pad * 2) * sc);
+    const g = cv.getContext("2d"); g.scale(sc, sc); g.fillStyle = "#1b2028"; g.fillRect(0, 0, cv.width, cv.height);
+    g.fillStyle = "#e6edf3"; g.font = `700 18px ${pageFont()}`; g.textBaseline = "middle"; g.fillText(title, pad, head / 2 + 2);
+    for (const r of t.rows) for (const c of r.cells) {
+      const b = c.getBoundingClientRect(), x = b.left - rb.left + pad, y = b.top - rb.top + head + pad, cs = getComputedStyle(c);
+      if (cs.backgroundColor && !/rgba\(0, 0, 0, 0\)|transparent/.test(cs.backgroundColor)) { g.fillStyle = cs.backgroundColor; g.fillRect(x + 1, y + 1, b.width - 2, b.height - 2); }
+      if (c.classList.contains("si")) { g.save(); g.beginPath(); g.rect(x + 1, y + 1, b.width - 2, b.height - 2); g.clip(); g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 3;
+        for (let k = -b.height; k < b.width; k += 7) { g.beginPath(); g.moveTo(x + k, y + b.height); g.lineTo(x + k + b.height, y); g.stroke(); } g.restore(); }
+      if (c.classList.contains("sel")) { g.strokeStyle = "#fff"; g.lineWidth = 3; g.strokeRect(x + 2.5, y + 2.5, b.width - 5, b.height - 5); }
+      const lines = c.innerText.split("\n").map(s => s.trim()).filter(Boolean), fs = parseFloat(cs.fontSize), al = cs.textAlign;
+      const tx = al === "center" ? x + b.width / 2 : al === "right" || al === "end" ? x + b.width - 8 : x + 8;
+      g.textAlign = al === "center" ? "center" : al === "right" || al === "end" ? "right" : "left";
+      const sizes = lines.map((_, i) => i ? fs * 0.72 : fs), tot = sizes.reduce((a, v) => a + v * 1.15, 0); let yy = y + b.height / 2 - tot / 2;
+      lines.forEach((ln, i) => { g.font = `${i ? 400 : cs.fontWeight} ${sizes[i]}px ${pageFont()}`; g.fillStyle = i ? "rgba(230,237,243,.75)" : cs.color; yy += sizes[i] * 1.15 / 2; g.fillText(ln, tx, yy, b.width - 6); yy += sizes[i] * 1.15 / 2; });
+    }
+    return cv;
+  }
+  function svgCanvas(svg, title){
+    return new Promise((res, rej) => {
+      const vb = (svg.getAttribute("viewBox") || "0 0 1000 400").split(/\s+/).map(Number), W = vb[2], H = vb[3], sc = 2, head = 34;
+      const cl = svg.cloneNode(true); cl.setAttribute("xmlns", "http://www.w3.org/2000/svg"); cl.setAttribute("width", W); cl.setAttribute("height", H); cl.setAttribute("font-family", pageFont());
+      cl.querySelectorAll(".pbhov").forEach(n => n.remove());
+      if (svg._extra) svg._extra(cl);
+      // copied site charts: the selected valid time as a solid, labelled vertical line
+      cl.querySelectorAll(".pbvalid").forEach(n => { n.setAttribute("stroke", "#ffd166"); n.setAttribute("stroke-opacity", "1"); n.setAttribute("stroke-width", "2.5"); n.removeAttribute("stroke-dasharray");
+        if (svg._valid) { const t = document.createElementNS("http://www.w3.org/2000/svg", "text"), x = +n.getAttribute("x1");
+          t.setAttribute("x", x + 5); t.setAttribute("y", +n.getAttribute("y1") + 14); t.setAttribute("fill", "#ffd166"); t.setAttribute("font-size", "13"); t.setAttribute("font-weight", "700");
+          t.setAttribute("stroke", "#141a22"); t.setAttribute("stroke-width", "4"); t.setAttribute("paint-order", "stroke"); t.textContent = svg._valid; n.after(t); } });
+      const img = new Image(); img.onload = () => { const cv = document.createElement("canvas"); cv.width = W * sc; cv.height = (H + head) * sc; const g = cv.getContext("2d"); g.scale(sc, sc);
+        g.fillStyle = "#141a22"; g.fillRect(0, 0, W, H + head); g.fillStyle = "#e6edf3"; g.font = `700 18px ${pageFont()}`; g.textBaseline = "middle"; g.fillText(title, 8, head / 2 + 2); g.drawImage(img, 0, head, W, H); res(cv); };
+      img.onerror = rej; img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(cl));
+    });
+  }
+  async function xImage(el, btn, save){
+    const title = xTitle(el), cv = el.tagName === "TABLE" ? tableCanvas(el, title) : await svgCanvas(el, title);
+    const blob = await new Promise(r => cv.toBlob(r, "image/png"));
+    if (save) { xDownload(blob, xName(title) + ".png"); xFlash(btn, "Saved ✓"); return; }
+    try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); xFlash(btn, "Image copied ✓"); }
+    catch (e) { xDownload(blob, xName(title) + ".png"); xFlash(btn, "Saved as PNG"); }
+  }
+  async function xCSV(el, btn){
+    const title = xTitle(el), txt = el.tagName === "TABLE" ? tableCSV(el) : (el._csv ? el._csv() : "");
+    if (!txt) { xFlash(btn, "No data yet"); return; }
+    try { await navigator.clipboard.writeText(txt); xFlash(btn, "CSV copied ✓"); }
+    catch (e) { xDownload(new Blob([txt], { type: "text/csv" }), xName(title) + ".csv"); xFlash(btn, "Saved as CSV"); }
+  }
+  function addExportBars(root){
+    root.querySelectorAll("table.sdt, svg.pbchart, svg.tschart").forEach(el => {
+      const anchor = el.closest(".sdscroll") || el; if (anchor.nextElementSibling && anchor.nextElementSibling.classList.contains("xbar")) return;
+      const bar = document.createElement("div"); bar.className = "xbar hide-snip";
+      bar.innerHTML = `<button type="button" data-x="img" title="Copy this ${el.tagName === "TABLE" ? "table" : "chart"} as a picture, as shown">Copy image</button><button type="button" data-x="png" title="Download this ${el.tagName === "TABLE" ? "table" : "chart"} as a PNG file">Save PNG</button><button type="button" data-x="csv" title="Copy the numbers as comma-separated values">Copy CSV</button>`;
+      bar.querySelector('[data-x="img"]').addEventListener("click", e => xImage(el, e.currentTarget).catch(() => xFlash(e.currentTarget, "Could not copy")));
+      bar.querySelector('[data-x="csv"]').addEventListener("click", e => xCSV(el, e.currentTarget));
+      bar.querySelector('[data-x="png"]').addEventListener("click", e => xImage(el, e.currentTarget, true).catch(() => xFlash(e.currentTarget, "Could not save")));
+      anchor.after(bar);
+    });
+  }
+  ["pbBody", "pbGrid", "tsOut"].forEach(id => { const n = document.getElementById(id); if (!n) return; let tm;
+    new MutationObserver(() => { clearTimeout(tm); tm = setTimeout(() => addExportBars(n), 60); }).observe(n, { childList: true, subtree: true }); });
   function copyTables(ids, title, btn){
     const parts = [title];
     ids.forEach(id => { const box = $(id); if (!box) return;
@@ -2697,12 +2981,12 @@
   // registered first so the run lists are cleared before the tables, charts and maps redraw
   ["validDate","validHour","pts"].forEach(id => $(id).addEventListener("change", () => { if ($("autoData").checked) dataFresh(); }));
   $("pts").addEventListener("input", () => { if ($("autoData").checked) dataFresh(); });
-  $("btnDataRefresh").addEventListener("click", () => { dataReset(); dataShow(); render(false); if ($("tab-ts").style.display !== "none") tsRender(); });
+  $("btnDataRefresh").addEventListener("click", () => { dataReset(); dataShow(); modelTabState(); lastPull = Date.now(); updateNotices(); render(false); if ($("tab-ts").style.display !== "none") tsRender(); });
   try { $("autoData").checked = store.get("autoData", "1") !== "0"; } catch (e) {}
   $("autoData").addEventListener("change", () => store.set("autoData", $("autoData").checked ? "1" : "0"));
   const rerender = () => { clearTimeout(deb); deb = setTimeout(() => render(!$("autoImages").checked), 500); };
   ["validDate","validHour","padding","padRight","padTop","padBottom","zoomOverride","windThr"].forEach(id => $(id).addEventListener("change", rerender));
-  ["validDate","validHour","pts"].forEach(id => $(id).addEventListener("change", () => pbRender()));
+  ["validDate","validHour","pts","windThr"].forEach(id => $(id).addEventListener("change", () => pbRender()));
   $("pts").addEventListener("input", rerender);
   $("csvFile").addEventListener("change", e => {
     const f = e.target.files[0]; if (!f) return;
@@ -2726,19 +3010,41 @@
   $("btnPbReload").addEventListener("click", () => { for (const k in pbCache) delete pbCache[k]; for (const k in refsIdx) delete refsIdx[k]; for (const k in sdwCV) delete sdwCV[k]; pbRender(); });
   pbRender();
   try { $("glmpBase").value = store.get("glmpBase", ""); $("glmpFiles").value = store.get("glmpFiles", ""); } catch (e) {}
-  $("btnData").addEventListener("click", () => { store.set("glmpFiles", $("glmpFiles").value.trim()); dataReset(); dataShow(); render(); });
+  $("btnData").addEventListener("click", () => { store.set("glmpFiles", $("glmpFiles").value.trim()); dataReset(); dataShow(); updateNotices(); render(); });
   $("btnGlmp").addEventListener("click", () => { store.set("glmpBase", $("glmpBase").value.trim()); const vt = validTime(), pts = lastImagePts; if (!vt || !pts) return;
     const W = Number(cal.w), H = Number(cal.h), prods = buildProducts(vt); prods.forEach(p => { p.view = cal.autofit === "1" ? fitView(pts, W, H, padN("padding", 90), parseFloat($("zoomOverride").value), templateView(p.tpl).zoom) : templateView(p.tpl); });
     glmpRender(pts, vt, W, H, prods); });
   $("btnEcmwf").addEventListener("click", () => render(true, true));
-  $("btnCopy").addEventListener("click", copyTable);
   ["snipBanner"].forEach(id => {
     const cls = "snip-banner";
     $(id).checked = store.get("nbm_" + id, false);
     document.body.classList.toggle(cls, $(id).checked);
     $(id).addEventListener("change", () => { document.body.classList.toggle(cls, $(id).checked); store.set("nbm_" + id, $(id).checked); });
   });
+  /* RRFS ensemble (REFS, every 6 h, out to 60 h) and Gridded LAMP (hourly, out to 38 h): grey the tab out and block it when the
+     selected valid time is past the newest run's last forecast hour. The newest run comes from the model data site when
+     available, otherwise from the usual posting delay. */
+  async function modelTabState(){
+    const vt = validTime(); if (!vt) return;
+    const H = 3.6e6, now = Date.now(), zrun = d => `${String(d.getUTCHours()).padStart(2, "0")}Z ${d.getUTCDate()} ${d.toUTCString().slice(8, 11)}`;
+    const refs = await preGet("refs").catch(() => null), lamp = await glmpLocalMetaGet();
+    let rRun = refs && refs.cycles && Object.values(refs.cycles).length ? new Date(Object.values(refs.cycles).sort().pop()) : null;
+    if (!rRun) { let c = Math.floor(now / (6 * H)) * 6 * H; if (now - c < 5 * H) c -= 6 * H; rRun = new Date(c); }
+    let gRun = lamp && lamp.cycle ? new Date(lamp.cycle) : new Date(Math.floor((now - 1.5 * H) / H) * H);
+    const gMax = lamp && lamp.fields ? Math.max(38, ...Object.values(lamp.fields).map(f => Math.max(0, ...(f.hours || [])))) : 38;
+    [["rrfs", "RRFS ensemble", rRun, 60], ["glmp", "Gridded LAMP", gRun, gMax]].forEach(([tab, nm, run, max]) => {
+      const b = document.querySelector(`.tab[data-tab="${tab}"]`); if (!b) return;
+      const lead = Math.round((vt - run) / H), off = lead > max;
+      b.classList.toggle("tabdis", off); b.setAttribute("aria-disabled", off ? "true" : "false");
+      b.title = off ? `No data available for the time selected. ${nm} (${zrun(run)} run) goes out ${max} hours; the selected time is ${lead} hours after that run.`
+                    : `${nm}: ${zrun(run)} run, selected time is +${Math.max(0, lead)} h of ${max} h`;
+      if (off && b.classList.contains("active")) document.querySelector('.tab[data-tab="samples"]').click();
+    });
+  }
+  ["validDate", "validHour"].forEach(id => $(id).addEventListener("change", () => modelTabState()));
+  setInterval(modelTabState, 10 * 60e3);
   document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+    if (b.classList.contains("tabdis")) return;
     document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === b));
     $("tab-images").style.display = b.dataset.tab === "images" ? "" : "none";
     $("tab-samples").style.display = b.dataset.tab === "samples" ? "" : "none";
@@ -2760,8 +3066,7 @@
   $("tsParam").addEventListener("change", () => { tsDefaults(); const P = TS_PARAMS.find(x => x.id === $("tsParam").value); if (P.avi) $("tsColor").value = "avi"; else if ($("tsColor").value === "avi") $("tsColor").value = "image"; tsRender(); });
   ["tsSite","tsModel","tsBefore","tsAfter","tsColor","tsTh1","tsTh2","tsDir"].forEach(id => $(id).addEventListener("change", tsRender));
   $("btnTs").addEventListener("click", tsRender);
-  $("btnTsCopy").addEventListener("click", () => copyTables(["tsOut"], `Time series, valid ${zlong(validTime())}`, $("btnTsCopy")));
-  ["validDate","validHour","pts"].forEach(id => $(id).addEventListener("change", () => { if ($("tab-ts").style.display !== "none") tsRender(); }));
+  ["validDate","validHour","pts","windThr"].forEach(id => $(id).addEventListener("change", () => { if ($("tab-ts").style.display !== "none") tsRender(); }));
   ["validDate","validHour","pts"].forEach(id => $(id).addEventListener("change", () => dataShow()));
   // forget which runs are available (latest.json / .idx lists) so the next draw looks for newer ones; downloaded records stay cached
   function dataFresh(){ Object.keys(PRE).forEach(k => delete PRE[k]); glmpLocalMeta = null; Object.keys(qmdCache).forEach(k => delete qmdCache[k]); Object.keys(refsIdx).forEach(k => delete refsIdx[k]); }
@@ -2774,6 +3079,28 @@
     const part = (lbl, m, ok) => `${lbl} ${m ? (ok ? "✓ " + run(m) : "✓ (points outside its area: live)") : "✗"}`;
     el.textContent = [part("NBM", n, preInside(n)), part("RRFS", r, preInside(r)), "LAMP " + (g ? "✓ " + g.run : "✗")].join(" · ");
   }
+  /* ---- "Updated" stamp (top right) and failure notices under the header, as on Splashdown Weather ---- */
+  let lastPull = Date.now();
+  async function updateNotices(){
+    const el = $("updStamp"), box = $("notices"); if (!el || !box) return;
+    const base = dataUrl(), metas = base ? await Promise.all([preGet("nbm"), preGet("refs"), glmpLocalMetaGet()]) : [null, null, null];
+    const names = ["NBM", "RRFS ensemble", "Gridded LAMP"], built = metas.map(m => m && m.built ? Date.parse(m.built) : null).filter(Boolean);
+    const newest = built.length ? Math.max(...built) : null, ageH = newest ? (Date.now() - newest) / 3.6e6 : null, zfull = t => { const d = new Date(t); return `${d.toISOString().slice(11, 16).replace(":", "")}Z ${d.toISOString().slice(0, 10)}`; };
+    el.innerHTML = (newest ? `Model data updated <b class="${ageH > 1.5 ? "stale" : ""}">${zfull(newest)}</b> · ${ageH < 1 ? Math.round(ageH * 60) + " min" : ageH.toFixed(1) + " h"} ago`
+                           : base ? `Model data <b class="stale">not reachable</b>` : `Model data <b>live from NOAA</b>`) + `<br>Page data pulled <b>${zfull(lastPull)}</b>`;
+    const N = [];
+    if (base && !newest) N.push(["bad", `The model data site (${esc(base)}) could not be reached, so every model is being fetched live (slower). Check the site's Actions tab, or the Model data URL under Sample points &amp; map framing.`]);
+    if (ageH != null && ageH > 1.5) N.push(["bad", `Model data is ${ageH.toFixed(1)} h old. The hourly update may have failed; check the repository's Actions tab.`]);
+    const part = []; metas.forEach((m, i) => { if (!m) { if (base && newest) part.push(`${names[i]} (no files)`); return; }
+      if (m.status === "missing") part.push(`${names[i]} (no data)`);
+      else if (m.status === "partial") { const miss = m.fields ? Object.entries(m.fields).filter(([, f]) => f.status !== "ok").map(([k, f]) => k + (f.hours && f.hours.length ? ` ${f.hours.length} h` : " missing")) : [];
+        part.push(`${names[i]} (partial${miss.length ? ": " + miss.join(", ") : ""})`); } });
+    if (part.length) N.push(["", `Model data site, this build: ${part.join(" · ")}.`]);
+    const failed = PB_SRC.filter(s => s.on && pbStat[s.id] && !/^ok|loading/.test(pbStat[s.id])).map(s => s.label.replace(/\s*\(.*\)$/, ""));
+    if (failed.length) N.push(["", `No data this run from ${failed.join(", ")}. Hover a source under Point samples › Model sources for the reason.`]);
+    box.innerHTML = N.map(([c, t]) => `<div class="notice ${c}">${t}</div>`).join("");
+  }
+  setInterval(updateNotices, 60e3);
   const dssShow = () => { $("dssState").textContent = DSS && DSS.risk ? "Private settings loaded (wind GO/ASSESS/NO-GO table active)." : "No private settings loaded: wind status shows – until you load your settings file."; };
   dssShow();
   $("setHelp").open = !(DSS && DSS.risk);
@@ -2788,6 +3115,8 @@
   $("dssForget").addEventListener("click", () => { if (!confirm("Remove the saved points and risk table from this browser?")) return;
     localStorage.removeItem("dssSettings"); store.set("nbmBriefPts2", ""); DSS = null; $("pts").value = ""; dssShow(); render(); pbRender(); });
   dataShow();
+  modelTabState();
+  updateNotices();
   render();
 })();
 </script>
