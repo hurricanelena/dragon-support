@@ -1311,9 +1311,17 @@
     { id: "aifs", label: "ECMWF AIFS ENS (51)", group: "Global ensembles (Open-Meteo)", weight: 1, on: true, size: "small", kind: "om", om: "ecmwf_aifs025" },
     { id: "gefs", label: "GEFS (31)", group: "Global ensembles (Open-Meteo)", weight: 1, on: true, size: "small", kind: "om", om: "gfs025" },
     { id: "icon", label: "ICON EPS (40)", group: "Global ensembles (Open-Meteo)", weight: 1, on: true, size: "small", kind: "om", om: "icon_seamless" },
-    { id: "gem", label: "GEM EPS (21)", group: "Global ensembles (Open-Meteo)", weight: 1, on: true, size: "small", kind: "om", om: "gem_global" }
+    { id: "gem", label: "GEM EPS (21)", group: "Global ensembles (Open-Meteo)", weight: 1, on: true, size: "small", kind: "om", om: "gem_global" },
+    // single deterministic runs (Open-Meteo Single Runs API): the newest run Open-Meteo has, and the 6-hourly run before it
+    { id: "gfsd0", label: "GFS, current run", group: "Global deterministic (Open-Meteo)", weight: 1, on: true, size: "small", kind: "omd", om: "gfs_global", lag: 0 },
+    { id: "gfsd1", label: "GFS, run before", group: "Global deterministic (Open-Meteo)", weight: 1, on: true, size: "small", kind: "omd", om: "gfs_global", lag: 1 },
+    { id: "ecd0", label: "ECMWF IFS, current run", group: "Global deterministic (Open-Meteo)", weight: 1, on: true, size: "small", kind: "omd", om: "ecmwf_ifs", lag: 0 },
+    { id: "ecd1", label: "ECMWF IFS, run before", group: "Global deterministic (Open-Meteo)", weight: 1, on: true, size: "small", kind: "omd", om: "ecmwf_ifs", lag: 1 }
   ];
   try { const sv = store.get("pbSrcOn2", null); if (sv) PB_SRC.forEach(s => { if (s.id in sv) s.on = !!sv[s.id]; }); } catch (e) {}
+  // GFS / ECMWF deterministic runs became on by default: switch them on once, even if an earlier visit saved them off
+  try { if (!store.get("omdDefOn", false)) { PB_SRC.forEach(s => { if (s.kind === "omd") s.on = true; }); store.set("omdDefOn", true);
+    const sv = store.get("pbSrcOn2", null); if (sv) { PB_SRC.forEach(s => { if (s.kind === "omd") sv[s.id] = true; }); store.set("pbSrcOn2", sv); } } } catch (e) {}
   const srcW = s => s.gw ? s.gw / Math.max(1, PB_SRC.filter(x => x.on && x.group === s.group).length) : s.weight;
   const pbCache = {}, pbStat = {};
   // coastal / near-sea-level MOS stations (GFS MOS + LAMP); nearest with guidance is used
@@ -1372,6 +1380,37 @@
       if (o.precipitation != null) r.p = o.precipitation >= 0.254 ? 1 : 0;
       if (o.temperature_2m != null && o.dew_point_2m != null) r.cs = (o.temperature_2m - o.dew_point_2m) * 125 <= CIG_LIM_M && (o.cloud_cover_low == null || o.cloud_cover_low >= 70) ? 1 : 0;
       return { id, r }; });
+  }
+  /* GFS / ECMWF IFS deterministic runs, one stated initialisation time each, from Open-Meteo's Single Runs API
+     (point values: 10 m wind, 1-h precip, visibility, and the T−Td / low-cloud ceiling stand-in like the global ensembles). */
+  const OMD_VARS = "wind_speed_10m,precipitation,temperature_2m,dew_point_2m,cloud_cover_low,visibility", omdCache = {}, omdLatestRun = {};
+  function omdGet(model, run, p){
+    const rs = run.toISOString().slice(0, 16), k = model + rs + p.lat + "," + p.lon;
+    if (!omdCache[k]) omdCache[k] = fetch(`https://single-runs-api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&models=${model}&run=${rs}&hourly=${OMD_VARS}&wind_speed_unit=kn&timezone=GMT`)
+      .then(async r => { const j = await r.json().catch(() => null); if (!r.ok || !j || j.error || !j.hourly) throw new Error((j && j.reason) || "Open-Meteo HTTP " + r.status); return j; })
+      .catch(e => { delete omdCache[k]; throw e; });
+    return omdCache[k];
+  }
+  // newest run Open-Meteo has for a model (tried newest 6-hourly cycle first at the first site; remembered 20 min)
+  async function omdLatest(model, p){
+    const c = omdLatestRun[model]; if (c && Date.now() - c.at < 20 * 60e3) return c.run;
+    const H6 = 6 * 3.6e6; let run = Math.floor(Date.now() / H6) * H6, err = "";
+    for (let k = 0; k < 5; k++, run -= H6) { try { await omdGet(model, new Date(run), p); omdLatestRun[model] = { run: new Date(run), at: Date.now() }; return new Date(run); } catch (e) { err = e.message; if (/fetch/i.test(err)) break; } }
+    throw new Error("no recent " + model + " run on Open-Meteo" + (err ? " (" + err + ")" : ""));
+  }
+  function omdVals(j, t){
+    const H = j.hourly, i = H.time.findIndex(x => Date.parse(x + "Z") === t); if (i < 0) return {};
+    const g = k => H[k] ? H[k][i] : null, o = {}, T = g("temperature_2m"), D = g("dew_point_2m"), lc = g("cloud_cover_low"), v = g("visibility");
+    if (g("wind_speed_10m") != null) o.w = g("wind_speed_10m");
+    if (g("precipitation") != null) o.p = g("precipitation") >= 0.254 ? 1 : 0;
+    if (T != null && D != null) o.cs = (T - D) * 125 <= CIG_LIM_M && (lc == null || lc >= 70) ? 1 : 0;
+    if (v != null) { o.v = v <= VIS_LIM_M ? 1 : 0; o.vr = v / 1609.34; }
+    return o;
+  }
+  async function omdFetch(src, run, t, sites){
+    const vals = await Promise.all(sites.map(p => omdGet(src.om, run, p).then(j => omdVals(j, t)).catch(() => ({}))));
+    if (!vals.some(o => Object.keys(o).length)) throw new Error(`no ${src.label.split(",")[0]} data for this hour in the ${run.toISOString().slice(11, 13)}Z run`);
+    return { cyc: run, members: [{ id: src.id, vals }] };
   }
   let hrrrTop = null;
   async function hrrrLatest(){
@@ -1513,6 +1552,7 @@
       per.forEach((x, i) => { if (x) notes.push(`${sites[i].name}: ${x.st} (${x.dnm} NM)`); });
       return { cyc: per.find(Boolean)?.rt, members, note: notes.join("; ") };
     }
+    if (src.kind === "omd") { const r0 = await omdLatest(src.om, sites[0]); return omdFetch(src, new Date(r0 - src.lag * 6 * 3.6e6), t, sites); }
     if (src.kind === "om") {
       const js = await Promise.all(sites.map(p => omSite(p, hrs)));
       const per = js.map(j => omMembers(j, src.om, t)), ids = [...new Set(per.flatMap(a => a.map(m => m.id)))];
@@ -1526,6 +1566,7 @@
     const T = new Date(t), R = new Date(run), g = (q, test) => { const r = idxRecord(q, test); return r ? cachedRange(q.url, r) : Promise.resolve(null); };
     if (src.kind === "hrrr") { const q = await fileAt("hrrr", new Date(R - src.lag * LB_H), T); return { members: [{ id: src.id, vals: await hrrrSample(q, sites) }], cyc: q.cyc }; }
     if (src.kind === "rrfs") { const q = await fileAt("rrfs", R, T); return { members: [{ id: "det", vals: await detSample(q, sites) }], cyc: q.cyc }; }
+    if (src.kind === "omd") return omdFetch(src, new Date(floorH(R, 6) - src.lag * 6 * 3.6e6), t, sites);
     if (src.kind === "mem") { const q = await fileAt(src.id, floorH(R, 6), T); return { members: [{ id: src.id, vals: await detSample(q, sites) }], cyc: q.cyc }; }
     if (src.kind === "nbmp" || src.kind === "nbmw") {
       const qc = await fileAt("core", R, T), f = qc.f;
@@ -1607,7 +1648,7 @@
         xs.forEach(x => pairs.push([x, (srcW(s) || 1) / xs.length])); }
       return pairs.length ? { v: wq(pairs, 0.5), n: pairs.length } : null; };
     const mc = med("cr"), mv = med("vr"); out.cig50 = mc ? mc.v : null; out.vis50 = mv ? mv.v : null; out.ncv = [mc ? mc.n : 0, mv ? mv.n : 0];
-    if (out.wx.c == null) { const st = share("cs", s => s.kind === "om"); if (st != null) { out.wx.c = st; out.si.c = true; } }
+    if (out.wx.c == null) { const st = share("cs", s => s.kind === "om" || s.kind === "omd"); if (st != null) { out.wx.c = st; out.si.c = true; } }
     let a = share("any"); for (const k of ["l", "c", "v"]) if (out.wx[k] != null) a = Math.max(a ?? 0, out.wx[k]); out.any = a;
     return out;
   }
@@ -1767,7 +1808,7 @@
     };
     draw();
     const jobs = [];
-    for (const s of PB_SRC.filter(s => s.on && (s.kind === "om" || s.kind === "mos" || s.kind === "nws"))) jobs.push((async () => {
+    for (const s of PB_SRC.filter(s => s.on && (s.kind === "om" || s.kind === "omd" || s.kind === "mos" || s.kind === "nws"))) jobs.push((async () => {
       for (const t of hrs) { if (gd[s.id + t]) continue; try { gd[s.id + t] = await pbFetch(s, t, sites, hrs); } catch (e) {} }
     })());
     if (PB_SRC.some(s => s.on && (s.kind === "nbmw" || s.kind === "nbmp"))) jobs.push((async () => {
@@ -1884,7 +1925,7 @@
     return [{ bg: "#3a9a5b", fg: "#fff" }, { bg: "#e7b416", fg: "#1b1300" }, { bg: "#cc3d31", fg: "#fff" }][lvl];
   }
   /* ---- Forecast look-back (dprog/dt): every run's forecast for the selected valid time ---- */
-  const LB_ARCH = new Set(["hrrr", "rrfs", "mem", "nbmp", "nbmw", "nbmq", "refs", "mos"]);
+  const LB_ARCH = new Set(["hrrr", "rrfs", "mem", "nbmp", "nbmw", "nbmq", "refs", "mos", "omd"]);
   const lbCache = {}; let lbSeq = 0, lbLast = "";
   function lbList(model){
     if (model === "nbm") return PB_SRC.filter(s => ["nbmp", "nbmw", "nbmq"].includes(s.kind));
@@ -2070,7 +2111,7 @@
         return h + "</table></div>";
       };
       box.innerHTML = table([v0, v0 + H1], "Valid time to +1 h", "p1") + table(hrs, "Valid time ±1 h (3 h)", "pm1", true) +
-        `<details class="howto"><summary>How this is made</summary><p class="hint">Ceiling and visibility chances use ceiling ≤ ${cigTxt()} and visibility ≤ ${visTxt()} (set next to the wind threshold at the top). Probability products count only where they carry that limit (ceiling: within 5%; visibility: between their thresholds); otherwise the source's own ceiling or visibility counts, and MOS / LAMP categories that straddle the limit count in proportion. Model runs and members count directly against those limits; NBM, RRFS-ensemble and Gridded LAMP only publish visibility probabilities at fixed thresholds (1 SM, then 2 SM, 3200 m or 3 SM), so the ≤ 1 NM chance is interpolated between the two nearest; MOS visibility category 3 (1 to 2 SM) counts as 20%. Built on this page from the same model set as Splashdown Weather, each queried live from its public source: HRRR time-lagged (NOAA AWS), RRFS deterministic and members in place of the retired HREF/NAM, NBM probabilities and wind, REFS and Gridded LAMP ceiling/visibility probabilities, GFS MOS and LAMP at the nearest coastal station (Iowa Environmental Mesonet), and the ECMWF, AIFS, GEFS, ICON and GEM ensembles (Open-Meteo). Gridded fields are sampled within 10 NM (wind: area mean; precip and lightning: anywhere within 10 NM; ceiling and visibility: area mean); MOS and Open-Meteo are point values. Hi-res precip = 1 km reflectivity ≥ 20 dBZ (HRRR) or 1-h precip > 0.01 in; lightning = explicit lightning output and NBM thunder only. Where no direct ceiling source covers the hours, the ceiling chance falls back to a global-ensemble stand-in (cloud base ≈ 125 m per °C of T−Td at or below 500 ft with ≥70% low cloud), hatched. Each value is the average over the table's hours. Wind, each hour: when NBM is the only wind source switched on, the mean, 99th percentile and chance of exceeding the threshold come straight from NBM's own quantile-mapped wind distribution; otherwise every member's 10 m wind at the site is pooled, with each source's weight split across its members, giving a weighted mean, weighted 99th percentile and the weighted share of members above the threshold (with fewer than 5 members the 99th percentile uses NBM's value if loaded). Mean and 99th percentile are looked up in the failure-risk table. Weather: share of each source's members meeting the condition (probabilities used directly), weight-averaged across sources, rounded to 5%. Ceiling and visibility values: the 50th percentile (weighted median) of every selected member's value at the site (each member averaged over the grid points within 10 NM) across the table's hours, with each source's weight split across its members. Members come from HRRR, RRFS, NBM and Gridded LAMP's own ceiling and visibility, the NWS Forecast, and GFS MOS / LAMP categories (category middle). The values are METAR-rounded and coloured by flight category; hover a cell for the number of member values.</p></details>`;
+        `<details class="howto"><summary>How this is made</summary><p class="hint">Ceiling and visibility chances use ceiling ≤ ${cigTxt()} and visibility ≤ ${visTxt()} (set next to the wind threshold at the top). Probability products count only where they carry that limit (ceiling: within 5%; visibility: between their thresholds); otherwise the source's own ceiling or visibility counts, and MOS / LAMP categories that straddle the limit count in proportion. Model runs and members count directly against those limits; NBM, RRFS-ensemble and Gridded LAMP only publish visibility probabilities at fixed thresholds (1 SM, then 2 SM, 3200 m or 3 SM), so the ≤ 1 NM chance is interpolated between the two nearest; MOS visibility category 3 (1 to 2 SM) counts as 20%. Built on this page from the same model set as Splashdown Weather, each queried live from its public source: HRRR time-lagged (NOAA AWS), RRFS deterministic and members in place of the retired HREF/NAM, NBM probabilities and wind, REFS and Gridded LAMP ceiling/visibility probabilities, GFS MOS and LAMP at the nearest coastal station (Iowa Environmental Mesonet), the ECMWF, AIFS, GEFS, ICON and GEM ensembles (Open-Meteo), and the GFS and ECMWF IFS deterministic runs (newest run and the 6-hourly run before it, Open-Meteo Single Runs API: 10 m wind, 1-h precip, visibility and the ceiling stand-in). Gridded fields are sampled within 10 NM (wind: area mean; precip and lightning: anywhere within 10 NM; ceiling and visibility: area mean); MOS and Open-Meteo are point values. Hi-res precip = 1 km reflectivity ≥ 20 dBZ (HRRR) or 1-h precip > 0.01 in; lightning = explicit lightning output and NBM thunder only. Where no direct ceiling source covers the hours, the ceiling chance falls back to a global-ensemble stand-in (cloud base ≈ 125 m per °C of T−Td at or below 500 ft with ≥70% low cloud), hatched. Each value is the average over the table's hours. Wind, each hour: when NBM is the only wind source switched on, the mean, 99th percentile and chance of exceeding the threshold come straight from NBM's own quantile-mapped wind distribution; otherwise every member's 10 m wind at the site is pooled, with each source's weight split across its members, giving a weighted mean, weighted 99th percentile and the weighted share of members above the threshold (with fewer than 5 members the 99th percentile uses NBM's value if loaded). Mean and 99th percentile are looked up in the failure-risk table. Weather: share of each source's members meeting the condition (probabilities used directly), weight-averaged across sources, rounded to 5%. Ceiling and visibility values: the 50th percentile (weighted median) of every selected member's value at the site (each member averaged over the grid points within 10 NM) across the table's hours, with each source's weight split across its members. Members come from HRRR, RRFS, NBM and Gridded LAMP's own ceiling and visibility, the NWS Forecast, and GFS MOS / LAMP categories (category middle). The values are METAR-rounded and coloured by flight category; hover a cell for the number of member values.</p></details>`;
     };
     draw();
     pbGrid(sites, vt, data);
