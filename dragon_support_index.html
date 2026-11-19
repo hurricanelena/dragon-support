@@ -100,9 +100,9 @@
   .pbsrc .pbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0} .pbsrc small{color:var(--muted);font-size:10.5px;white-space:nowrap;margin-left:auto}
   .pbsrc .chip{font-size:10.5px;padding:0 5px;max-width:105px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none} .pbsrc .chip:empty{display:none}
   .sdleg i.fvfr{background:#2e9e4f} .sdleg i.fmvfr{background:#2f6fd6} .sdleg i.fifr{background:#d0312d} .sdleg i.flifr{background:#c03fc0}
-  #gridCards,#rrfsCards,#glmpCards{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
-  #gridCards .card,#rrfsCards .card,#glmpCards .card{flex:1 1 420px;max-width:var(--cardw,600px);margin-bottom:0}
-  #gridCards .viewport,#rrfsCards .viewport,#glmpCards .viewport{width:100%!important;height:auto!important;aspect-ratio:4/5}
+  #gridCards,#rrfsCards,#rrfsdCards,#glmpCards{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+  #gridCards .card,#rrfsCards .card,#rrfsdCards .card,#glmpCards .card{flex:1 1 420px;max-width:var(--cardw,600px);margin-bottom:0}
+  #gridCards .viewport,#rrfsCards .viewport,#rrfsdCards .viewport,#glmpCards .viewport{width:100%!important;height:auto!important;aspect-ratio:4/5}
   table.sdt{width:100%}
 .vtbar #btnDataRefresh{font-size:20px;padding:8px 18px} .vtbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 30px;padding:16px 20px;margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel,#161d26);font-size:24px;font-weight:600}
   .vtbar input,.vtbar select{font-size:24px;padding:6px 10px;min-height:44px} .vtbar .hint{font-size:17px;font-weight:400}
@@ -164,7 +164,7 @@
   body.snip main{padding-top:6px}
   #snipHead{display:none}
   body.snip:not(.snip-valid) #snipHead{display:none!important}
-  body:not(.snip-banner) #cards .banner,body:not(.snip-banner) #gridCards .banner,body:not(.snip-banner) #rrfsCards .banner,body:not(.snip-banner) #glmpCards .banner{display:none!important}
+  body:not(.snip-banner) #cards .banner,body:not(.snip-banner) #gridCards .banner,body:not(.snip-banner) #rrfsCards .banner,body:not(.snip-banner) #rrfsdCards .banner,body:not(.snip-banner) #glmpCards .banner{display:none!important}
   body.snip #snipHead{display:block;font-size:36px;font-weight:700;padding:8px 2px 14px;text-align:center}
   body.snip .banner{justify-content:center;text-align:center}
   body.snip #cards .card-head{display:none!important}
@@ -285,7 +285,8 @@
     <button class="tab" data-tab="ts" role="tab">Point Forecast Time Series</button>
     <button class="tab" data-tab="synoptic" role="tab">Synoptic</button>
     <button class="tab" data-tab="grid" role="tab">NBM Gridded</button>
-    <button class="tab" data-tab="rrfs" role="tab">RRFS</button>
+    <button class="tab" data-tab="rrfs" role="tab">REFS</button>
+    <button class="tab" data-tab="rrfsd" role="tab">RRFS</button>
     <button class="tab" data-tab="glmp" role="tab">Gridded LAMP</button>
     <button class="tab" data-tab="ecmwf" role="tab">ECMWF Point Data</button>
   </div>
@@ -377,8 +378,12 @@
     <div id="glmpCards"></div>
   </div>
   <div id="tab-rrfs" class="tabpane" style="display:none">
-    <details class="howto"><summary>How this is made</summary><p class="hint hide-snip" style="margin:0 0 10px">RRFS ensemble (REFS, operational) from NOAA's open data bucket, drawn the same way as the NBM Gridded maps. Runs every 6 h (00/06/12/18Z) out to 60 h. Labels are the value at the single nearest RRFS grid point (3 km).</p></details>
+    <details class="howto"><summary>How this is made</summary><p class="hint hide-snip" style="margin:0 0 10px">REFS (the operational RRFS ensemble) from NOAA's open data bucket, drawn the same way as the NBM Gridded maps. Runs every 6 h (00/06/12/18Z) out to 60 h. Wind, wind probability and PoP come from REFS's own ensemble products. REFS publishes no ceiling percentiles, so the ceiling map is the 50th percentile (median) worked out here, cell by cell, from the RRFS runs behind REFS: members m001–m005 and the deterministic RRFS for the same cycle, plus the same set from the cycle 6 h earlier (time-lagged), as many as are posted; "no ceiling" counts as the highest value. Labels are the value at the single nearest grid point (3 km).</p></details>
     <div id="rrfsCards"></div>
+  </div>
+  <div id="tab-rrfsd" class="tabpane" style="display:none">
+    <details class="howto"><summary>How this is made</summary><p class="hint hide-snip" style="margin:0 0 10px">Deterministic RRFS (the operational control run) from NOAA's open data bucket, drawn the same way as the NBM Gridded and REFS maps. Runs hourly; the 00/06/12/18Z runs go out to 84 h. 10 m wind is the speed from the 10 m U and V winds; ceiling is the model's cloud ceiling. A single run has no probabilities, so the wind-exceedance and PoP maps show the share of the area within 10 NM of each point where the run has wind above the threshold, or more than 0.01 in of precipitation in the hour ending at the valid time (a neighbourhood probability, like REFS's). For each hour the newest run that has it is used, then the 3-hour fallback. Labels are the value at the single nearest grid point (3 km).</p></details>
+    <div id="rrfsdCards"></div>
   </div>
 
 
@@ -2522,10 +2527,9 @@
       return { f: await cachedRange(q.url, rec), scale: "wind", smooth: true, sigma: 0.5, conv: v => v * 1.943844, cyc: q.cyc, off: q.offset, fmt: "kt", title: "Ensemble-mean 10 m wind (KT)" };
     }
     if (prod.id === "cig") {
-      const q = await findRefs("mean", vt), rec = hasRec(q, `:HGT:cloud ceiling:${q.f} hour fcst:wt ens mean`);
-      if (!rec) throw new Error("mean ceiling not in file");
-      // members without a ceiling carry a very high value; treat means above ~39,000 ft as "no ceiling"
-      return { f: await cachedRange(q.url, rec), scale: "cig", smooth: true, sigma: 0.6, conv: v => v > 12000 ? null : v * 3.28084, cyc: q.cyc, off: q.offset, fmt: "cig", title: "Ensemble-mean ceiling AGL (FT)" };
+      const r = await refsCigP50(vt);
+      // members without a ceiling carry a very high value; a median above ~39,000 ft is "no ceiling"
+      return { f: r.f, scale: "cig", smooth: true, sigma: 0.6, conv: v => v > 12000 ? null : v * 3.28084, cyc: r.cyc, off: r.off, fmt: "cig", title: `Ensemble 50th percentile ceiling AGL (FT) · ${r.n} RRFS runs` };
     }
     if (prod.id === "pw") {
       const thr = thrKt(), native = REFS_NATIVE[thr];
@@ -2553,32 +2557,103 @@
     if (v == null) return "n/a";
     return F.fmt === "kt" ? `${Math.round(v)} KT` : `${Math.round(v)}%`;
   }
-  let rrfsSeq = 0;
-  async function rrfsRender(pts, vt, W, H, products){
-    const seq = ++rrfsSeq, box = $("rrfsCards"); box.innerHTML = "";
+  /* REFS ceiling, 50th percentile: REFS has no percentile products, so the median is taken here, cell by cell, over the RRFS
+     runs behind REFS (members m001–m005 and the deterministic RRFS) for the REFS cycle and the cycle 6 h before it. */
+  const refsCigMed = {};
+  function refsCigP50(vt){
+    return (async () => {
+      const q = await findRefs("mean", vt), key = q.cyc.toISOString() + "f" + q.f;
+      if (!refsCigMed[key]) refsCigMed[key] = (async () => {
+        const urls = [], add = (cyc, f) => { if (f < 1) return; const ymd = cyc.toISOString().slice(0,10).replace(/-/g,""), hh = cyc.toISOString().slice(11,13), F = String(f).padStart(3, "0");
+          if (f <= 60) ["m001", "m002", "m003", "m004", "m005"].forEach(m => urls.push(`${REFS_S3}/rrfsens.${ymd}/${hh}/${m}/rrfs.t${hh}z.${m}.2dfldnomads.3km.f${F}.conus.grib2`));
+          if (f <= 84) urls.push(`${REFS_S3}/rrfs.${ymd}/${hh}/rrfs.t${hh}z.2dfld.3km.f${F}.conus.grib2`); };
+        add(q.cyc, q.f); add(new Date(q.cyc - 6 * 3.6e6), q.f + 6);
+        const flds = (await Promise.all(urls.map(async url => { try {
+            if (!(url in refsIdx)) { const r = await fetch(url + ".idx", { cache: "no-store" }); refsIdx[url] = r.ok ? await r.text() : null; }
+            if (!refsIdx[url]) return null;
+            const rec = idxRecord({ idx: refsIdx[url] }, l => /:CEIL:cloud ceiling:\d+ hour fcst:/.test(l)); if (!rec) return null;
+            return decodeGrib2(await fetchRange(url, rec)); } catch (e) { return null; } }))).filter(Boolean);
+        if (!flds.length) throw new Error("no RRFS member ceilings posted for this hour");
+        const g = flds[0].grid, use = flds.filter(f => f.grid.nx === g.nx && f.grid.ny === g.ny && f.grid.scan === g.scan && Math.abs(f.grid.la1 - g.la1) < 1e-3 && Math.abs(f.grid.lo1 - g.lo1) < 1e-3);
+        const N = g.nx * g.ny, M = use.length, out = new Float32Array(N), b = new Float64Array(M);
+        for (let k = 0; k < N; k++) {
+          let n = 0;
+          for (let m = 0; m < M; m++) { let v = use[m].valueAtIndex(k); if (v == null) continue; if (v > 12000) v = 1e7;
+            let i = n++; while (i > 0 && b[i - 1] > v) { b[i] = b[i - 1]; i--; } b[i] = v; }      // insertion sort
+          out[k] = !n ? NaN : n & 1 ? b[n >> 1] : (b[n / 2 - 1] + b[n / 2]) / 2;
+        }
+        return { f: { grid: g, valueAtIndex: k => { const v = out[k]; return v !== v ? null : v; } }, n: M, cyc: q.cyc, off: q.offset };
+      })().catch(e => { delete refsCigMed[key]; throw e; });
+      return refsCigMed[key];
+    })();
+  }
+  // share of the grid points within rM (default 10 NM) of each point where test(value) holds, in % (neighbourhood probability)
+  function nbhdPct(fld, test, rM){
+    const g = fld.grid, nx = g.nx, ny = g.ny, n = Math.max(1, Math.round((rM || R10) / g.dx)), W = nx + 1;
+    const S = new Int32Array(W * (ny + 1)), C = new Int32Array(W * (ny + 1)), ok = new Uint8Array(nx * ny);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const v = fld.valueAtIndex(gIdx(g, i, j)), valid = v != null ? 1 : 0, hit = valid && test(v) ? 1 : 0, a = (j + 1) * W + i + 1;
+      ok[j * nx + i] = valid; S[a] = hit + S[a - W] + S[a - 1] - S[a - W - 1]; C[a] = valid + C[a - W] + C[a - 1] - C[a - W - 1]; }
+    const out = new Float32Array(nx * ny), box = (T, i0, j0, i1, j1) => T[(j1 + 1) * W + i1 + 1] - T[j0 * W + i1 + 1] - T[(j1 + 1) * W + i0] + T[j0 * W + i0];
+    for (let j = 0; j < ny; j++) { const j0 = Math.max(0, j - n), j1 = Math.min(ny - 1, j + n);
+      for (let i = 0; i < nx; i++) { if (!ok[j * nx + i]) { out[j * nx + i] = NaN; continue; } const i0 = Math.max(0, i - n), i1 = Math.min(nx - 1, i + n), c = box(C, i0, j0, i1, j1);
+        out[j * nx + i] = c ? 100 * box(S, i0, j0, i1, j1) / c : NaN; } }
+    return { grid: Object.assign({}, g, { scan: g.scan & ~0x30 }), valueAtIndex: k => { const v = out[k]; return v !== v ? null : v; }, pre: fld.pre };
+  }
+  // deterministic RRFS maps (RRFS tab): same products and drawing as the REFS tab
+  async function rrfsdFields(prod, vt){
+    const q = await rrfsDetFile(vt), cyc = q.cyc, off = q.offset, f = q.f, rec = re => idxRecord(q, l => re.test(l));
+    const hh = d => String(d.getUTCHours()).padStart(2,"0") + "Z", vu = q.validUsed || vt;
+    if (prod.id === "ws" || prod.id === "pw") {
+      const ru = rec(/:UGRD:10 m above ground:\d+ hour fcst:/), rv = rec(/:VGRD:10 m above ground:\d+ hour fcst:/);
+      if (!ru || !rv) throw new Error("10 m wind not in file");
+      const [fu, fv] = await pairRange(q.url, ru, q.url, rv);
+      const spd = { grid: fu.grid, pre: fu.pre, valueAtIndex: k => { const a = fu.valueAtIndex(k), b = fv.valueAtIndex(k); return a == null || b == null ? null : Math.hypot(a, b); } };
+      if (prod.id === "ws") return { f: spd, scale: "wind", smooth: true, sigma: 0.5, conv: v => v * 1.943844, cyc, off, fmt: "kt", title: "RRFS 10 m wind (KT)" };
+      const thr = thrKt(), t = thr / 1.943844;
+      return { f: nbhdPct(spd, v => v > t), scale: "wprob", smooth: true, sigma: 0.5, cyc, off, fmt: "pct", title: `10 m wind > ${thr} KT within 10 NM · RRFS (% of area)` };
+    }
+    if (prod.id === "pop") {
+      const r = rec(new RegExp(`:APCP:surface:${f-1}-${f} hour acc fcst:`)); if (!r) throw new Error("1-h precip not in file");
+      return { f: nbhdPct(await cachedRange(q.url, r), v => v > 0.254), scale: "pop", smooth: true, sigma: 0.4, cyc, off, fmt: "pct",
+               title: `1-h precip > 0.01 in within 10 NM (${hh(new Date(vu - 3.6e6))}–${hh(vu)}) · RRFS (% of area)` };
+    }
+    if (prod.id === "cig") {
+      const r = rec(/:CEIL:cloud ceiling:\d+ hour fcst:/); if (!r) throw new Error("ceiling not in file");
+      return { f: await cachedRange(q.url, r), scale: "cig", smooth: true, sigma: 0.6, conv: v => v > 12000 ? null : v * 3.28084, cyc, off, fmt: "cig", title: "RRFS ceiling AGL (FT)" };
+    }
+    throw new Error("unknown product");
+  }
+  const GRIDTAB = { refs: { box: "rrfsCards", fields: p => rrfsFields, name: "REFS", png: "REFS", loading: "Loading REFS grid…" },
+                    det: { box: "rrfsdCards", fields: p => rrfsdFields, name: "RRFS", png: "RRFS", loading: "Loading RRFS grid…" } };
+  const gridTabSeq = { refs: 0, det: 0 };
+  function rrfsRender(pts, vt, W, H, products){ return gridTabRender("refs", pts, vt, W, H, products); }
+  function rrfsdRender(pts, vt, W, H, products){ return gridTabRender("det", pts, vt, W, H, products); }
+  async function gridTabRender(kind, pts, vt, W, H, products){
+    const T = GRIDTAB[kind], fieldsFn = T.fields(), seq = ++gridTabSeq[kind], box = $(T.box); box.innerHTML = "";
     const base = loadBasemap(pts).catch(() => null);
     for (const [idx, prod] of products.entries()) {
       const card = document.createElement("section"); card.className = "card";
-      card.innerHTML = `<div class="card-head"><h2>${idx+1}. ${esc(prod.title)}</h2><span class="meta" data-meta>Loading RRFS ensemble grid…</span><div class="spacer"></div>
+      card.innerHTML = `<div class="card-head"><h2>${idx+1}. ${esc(prod.title)}</h2><span class="meta" data-meta>${T.loading}</span><div class="spacer"></div>
           <button class="hide-snip" data-png>Save PNG</button></div>
         <div class="viewport" style="width:${W}px;max-width:100%;height:${H}px"><canvas width="${W}" height="${H}" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
-          <div class="overlay"></div><div class="banner"><b data-t>${esc(prod.short)}</b><span>Valid ${zlong(vt)}</span><span data-run>RRFS ensemble</span></div></div>`;
+          <div class="overlay"></div><div class="banner"><b data-t>${esc(prod.short)}</b><span>Valid ${zlong(vt)}</span><span data-run>${T.name}</span></div></div>`;
       box.appendChild(card);
-      card.querySelector("[data-png]").addEventListener("click", () => savePng(card, W, H, "RRFS_" + prod.id));
+      card.querySelector("[data-png]").addEventListener("click", () => savePng(card, W, H, T.png + "_" + prod.id));
       card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, () => "…");
       (async () => {
         try {
-          const [F, bm] = await Promise.all([rrfsFields(prod, vt), base]);
-          if (seq !== rrfsSeq) return;
+          const [F, bm] = await Promise.all([fieldsFn(prod, vt), base]);
+          if (seq !== gridTabSeq[kind]) return;
           await drawGrid(card.querySelector("canvas"), prod.view, W, H, F, bm);
           card.querySelector("[data-t]").textContent = F.title;
           const runZ = `${String(F.cyc.getUTCHours()).padStart(2,"0")}Z ${F.cyc.getUTCDate()} ${F.cyc.toUTCString().slice(8,11)} run`;
-          card.querySelector("[data-run]").textContent = "RRFS ens " + runZ;
-          card.querySelector("[data-meta]").innerHTML = `RRFS ensemble (REFS) ${runZ}${F.f.pre ? " · fast copy" : ""}` + fbTag(F.off, vt);
+          card.querySelector("[data-run]").textContent = T.name + " " + runZ;
+          card.querySelector("[data-meta]").innerHTML = `${kind === "refs" ? "REFS (RRFS ensemble)" : "RRFS deterministic"} ${runZ}${F.f.pre ? " · fast copy" : ""}` + fbTag(F.off, vt);
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, i => fieldLabel(F, pts[i]));
         } catch (e) {
-          if (seq !== rrfsSeq) return;
-          card.querySelector("[data-meta]").textContent = "RRFS unavailable: " + e.message;
+          if (seq !== gridTabSeq[kind]) return;
+          card.querySelector("[data-meta]").textContent = T.name + " unavailable: " + e.message;
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, () => "n/a");
         }
       })();
@@ -2771,7 +2846,7 @@
       ctx.fillStyle = "rgba(8,12,18,.8)"; ctx.fillRect(0, 0, W, 48); ctx.fillStyle = "#fff"; ctx.font = `600 26px ${ff}`; ctx.textAlign = "left";
       ctx.fillText([...b.children].map(x => x.textContent).join("   "), 10, 33);
     }
-    const a = document.createElement("a"); a.download = `${(card.closest("#rrfsCards") ? "RRFS" : card.closest("#glmpCards") ? "GLMP" : "NBM")}_${id}${noLeg ? "" : "_legend"}_${(validTime() || new Date()).toISOString().slice(0,13).replace(/[-T]/g,"")}Z.png`; a.href = out.toDataURL("image/png"); a.click();
+    const a = document.createElement("a"); a.download = `${(card.closest("#rrfsCards") ? "REFS" : card.closest("#rrfsdCards") ? "RRFS" : card.closest("#glmpCards") ? "GLMP" : "NBM")}_${id}${noLeg ? "" : "_legend"}_${(validTime() || new Date()).toISOString().slice(0,13).replace(/[-T]/g,"")}Z.png`; a.href = out.toDataURL("image/png"); a.click();
   }
 
   /* ---------- rendering ---------- */
@@ -2907,7 +2982,7 @@
     $("imgStale").style.display = samplesOnly ? "" : "none";
     products.forEach(p => { p.view = viewFor(p); });
 
-    if (!samplesOnly) { gridRender(pts, vt, W, H, products); rrfsRender(pts, vt, W, H, products); glmpRender(pts, vt, W, H, products); }
+    if (!samplesOnly) { gridRender(pts, vt, W, H, products); rrfsRender(pts, vt, W, H, products); rrfsdRender(pts, vt, W, H, products); glmpRender(pts, vt, W, H, products); }
     renderTable(pts, vt, "sampling…");
     cigVis = { cigFt: null, visNm: null, err: "", pending: true };
     const redrawCig = () => {
@@ -3279,7 +3354,8 @@
     if (!rRun) { let c = Math.floor(now / (6 * H)) * 6 * H; if (now - c < 5 * H) c -= 6 * H; rRun = new Date(c); }
     let gRun = lamp && lamp.cycle ? new Date(lamp.cycle) : new Date(Math.floor((now - 1.5 * H) / H) * H);
     const gMax = lamp && lamp.fields ? Math.max(38, ...Object.values(lamp.fields).map(f => Math.max(0, ...(f.hours || [])))) : 38;
-    [["rrfs", "RRFS ensemble", rRun, 60], ["glmp", "Gridded LAMP", gRun, gMax]].forEach(([tab, nm, run, max]) => {
+    let dRun = Math.floor(now / (6 * H)) * 6 * H; if (now - dRun < 4 * H) dRun -= 6 * H; dRun = new Date(dRun);   // newest 84-h RRFS run
+    [["rrfs", "REFS", rRun, 60], ["rrfsd", "RRFS deterministic", dRun, 84], ["glmp", "Gridded LAMP", gRun, gMax]].forEach(([tab, nm, run, max]) => {
       const b = document.querySelector(`.tab[data-tab="${tab}"]`); if (!b) return;
       const lead = Math.round((vt - run) / H), off = lead > max + 3;
       b.classList.toggle("tabdis", off); b.setAttribute("aria-disabled", off ? "true" : "false");
@@ -3299,9 +3375,10 @@
     $("tab-grid").style.display = b.dataset.tab === "grid" ? "" : "none";
     $("tab-synoptic").style.display = b.dataset.tab === "synoptic" ? "" : "none";
     $("tab-rrfs").style.display = b.dataset.tab === "rrfs" ? "" : "none";
+    $("tab-rrfsd").style.display = b.dataset.tab === "rrfsd" ? "" : "none";
     $("tab-glmp").style.display = b.dataset.tab === "glmp" ? "" : "none";
     $("tab-ts").style.display = b.dataset.tab === "ts" ? "" : "none";
-    $("imgBar").style.display = ["synoptic", "grid", "rrfs", "glmp"].includes(b.dataset.tab) ? "" : "none";
+    $("imgBar").style.display = ["synoptic", "grid", "rrfs", "rrfsd", "glmp"].includes(b.dataset.tab) ? "" : "none";
     if (b.dataset.tab === "ts") { tsRender(); lbRender(); }
     document.body.classList.toggle("on-ecmwf", b.dataset.tab === "ecmwf");
   }));
@@ -3340,7 +3417,7 @@
   async function updateNotices(){
     const el = $("updStamp"), box = $("notices"); if (!el || !box) return;
     const base = dataUrl(), metas = base ? await Promise.all([preGet("nbm"), preGet("refs"), glmpLocalMetaGet()]) : [null, null, null];
-    const names = ["NBM", "RRFS ensemble", "Gridded LAMP"], built = metas.map(m => m && m.built ? Date.parse(m.built) : null).filter(Boolean);
+    const names = ["NBM", "REFS", "Gridded LAMP"], built = metas.map(m => m && m.built ? Date.parse(m.built) : null).filter(Boolean);
     const newest = built.length ? Math.max(...built) : null, ageH = newest ? (Date.now() - newest) / 3.6e6 : null, zfull = t => { const d = new Date(t); return `${d.toISOString().slice(11, 16).replace(":", "")}Z ${d.toISOString().slice(0, 10)}`; };
     el.innerHTML = (newest ? `Model data updated <b class="${ageH > 1.5 ? "stale" : ""}">${zfull(newest)}</b> · ${ageH < 1 ? Math.round(ageH * 60) + " min" : ageH.toFixed(1) + " h"} ago`
                            : base ? `Model data <b class="stale">not reachable</b>` : `Model data <b>live from NOAA</b>`) + `<br>Page data pulled <b>${zfull(lastPull)}</b>`;
