@@ -106,7 +106,7 @@
   table.sdt{width:100%}
 .vtbar #btnDataRefresh{font-size:20px;padding:8px 18px} .vtbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 30px;padding:16px 20px;margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel,#161d26);font-size:24px;font-weight:600}
   .vtbar input,.vtbar select{font-size:24px;padding:6px 10px;min-height:44px} .vtbar .hint{font-size:17px;font-weight:400}
-  .vtbar label{display:flex;align-items:center;gap:8px;margin:0}
+  .vtbar label{display:flex;align-items:center;gap:8px;margin:0} .vtbar .vtbreak{flex-basis:100%;height:0}
   /* Sample points & map framing: ~0.75× text, four sub-sections */
   #ptsFold .inputs{font-size:20px;grid-template-columns:minmax(260px,1.2fr) minmax(260px,1fr) minmax(260px,1fr);grid-template-areas:"set pts data" "set frame frame";gap:12px}
   #ptsFold label,#ptsFold .hint,#ptsFold .err{font-size:17px} #ptsFold textarea{font-size:18px;min-height:120px} #ptsFold legend{font-size:19px}
@@ -132,6 +132,9 @@
   .synstamp{background:#fff;border-bottom:2px solid var(--line)}
   .syncur{outline:3px solid #ffd166;outline-offset:-1px}
   .tab.tabdis{opacity:.4;cursor:not-allowed;background:#1a1f27;color:var(--muted)}
+  .tsfold{border-top:1px solid var(--line)} .tsfold>summary{padding:10px 14px;font-size:19px;font-weight:600;color:var(--accent);cursor:pointer}
+  .lbwrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start} @media (max-width:1000px){.lbwrap{grid-template-columns:1fr}}
+  .fbtag{color:#ffd166;font-weight:700}
   .ptsfold{margin:0 0 12px} .ptsfold>summary{cursor:pointer;font-size:19px;font-weight:600;padding:6px 2px}
 .howto{margin:8px 0} .howto>summary{cursor:pointer;color:var(--muted);font-size:17px;font-weight:600} .howto>summary::before{content:'▸ '} .howto[open]>summary::before{content:'▾ '} .howto>summary::-webkit-details-marker{display:none} .howto>summary{list-style:none}
 .setfold>summary{color:#ffd166} .sethelp{padding:6px 14px 10px;font-size:18px;line-height:1.45} .sethelp ol{margin:6px 0 8px 22px;padding:0} .sethelp li{margin:3px 0}
@@ -186,10 +189,15 @@
   <section class="vtbar hide-snip">
     <label>Valid date (UTC) <input type="date" id="validDate"></label>
     <label>Hour (Z) <select id="validHour"></select></label>
-    <label>Wind exceedance threshold (KT) <input type="number" id="windThr" min="1" max="100" step="1" value="13" style="width:5em"></label>
     <span class="spacer" style="flex:1"></span>
     <button class="primary" id="btnDataRefresh" type="button" title="Pull the newest model data now (pre-processed files and live runs) and redraw every table, chart and map">↻ Refresh data</button>
     <label class="chk" title="When on, changing the points, valid date or hour pulls the newest model data before redrawing"><input type="checkbox" id="autoData" checked> Pull new data when points, date or time change</label>
+    <span class="vtbreak"></span>
+    <label>Wind exceedance threshold (KT) <input type="number" id="windThr" min="1" max="100" step="1" value="13" style="width:5em"></label>
+    <label title="Ceiling limit used for the ceiling chance in every table, chart and look-back">Prob of ceiling at or below <select id="cigThr">
+      <option value="200">200 ft</option><option value="300">300 ft</option><option value="400">400 ft</option><option value="500" selected>500 ft</option><option value="600">600 ft</option><option value="700">700 ft</option><option value="800">800 ft</option><option value="1000">1,000 ft</option><option value="1500">1,500 ft</option><option value="2000">2,000 ft</option><option value="3000">3,000 ft</option></select></label>
+    <label title="Visibility limit used for the visibility chance in every table, chart and look-back">Prob of visibility at or below <select id="visThr">
+      <option value="805">1/2 SM</option><option value="1207">3/4 SM</option><option value="1609">1 SM</option><option value="1852" selected>1 NM</option><option value="2414">1 1/2 SM</option><option value="3219">2 SM</option><option value="4828">3 SM</option></select></label>
   </section>
   <details class="hide-snip ptsfold setfold" id="setHelp"><summary>Private settings: how to load dragon_support_settings.json (click to show / hide)</summary>
     <div class="sethelp">
@@ -274,7 +282,7 @@
 
   <div class="tabs hide-snip" role="tablist">
     <button class="tab active" data-tab="samples" role="tab">Point samples</button>
-    <button class="tab" data-tab="ts" role="tab">Point Time Series</button>
+    <button class="tab" data-tab="ts" role="tab">Point Forecast Time Series</button>
     <button class="tab" data-tab="synoptic" role="tab">Synoptic</button>
     <button class="tab" data-tab="grid" role="tab">NBM Gridded</button>
     <button class="tab" data-tab="rrfs" role="tab">RRFS</button>
@@ -285,7 +293,9 @@
     <div class="card-head"><h2>Point samples</h2><span class="meta">Built on this page from live model data</span></div>
     <div style="padding:10px 12px">
       <details id="pbDet" class="hide-snip"><summary class="pbsum">Model sources (click to show / hide)</summary><div id="pbSrc" class="pbsrcs"></div></details>
-      <div id="pbBody"></div>
+      <div class="row hide-snip" style="gap:8px;margin:0 0 8px;font-size:17px"><label>Colour wind, precip and lightning by <select id="pbColor"><option value="go">GO / ASSESS / NO-GO and weather 20 / 50%</option><option value="img">Image colour scales (as on the maps)</option></select></label>
+      <span class="hint" style="font-size:15px">Ceiling and visibility values always use flight categories; ceiling and visibility chances use the probability-of-exceedance scale.</span></div>
+    <div id="pbBody"></div>
       <div id="pbGrid" style="margin-top:14px"></div>
       <div class="row hide-snip" style="margin-top:10px"><button class="primary" id="btnPbReload">↻ Update samples</button><span class="hint">Re-reads the model files; images are not touched. RRFS members download ≈8 MB per hour each when ticked.</span></div>
     </div>
@@ -316,7 +326,8 @@
     <div id="gridCards"></div>
   </div>
   <section id="tab-ts" class="card tabpane" style="display:none">
-    <div class="card-head"><h2>Point Time Series</h2><span class="meta">One site, one parameter, hourly, sampled within 10 NM like Point samples</span></div>
+    <div class="card-head"><h2>Point Forecast Time Series</h2><span class="meta">One site, one parameter, hourly, sampled within 10 NM like Point samples</span></div>
+    <details class="tsfold" id="tsFold" open><summary>Forecast time series: one run, hours around the valid time (click to show / hide)</summary>
     <div style="padding:10px 12px">
       <div class="row" style="flex-wrap:wrap;gap:10px 18px;font-size:18px">
         <label>Site <select id="tsSite"></select></label>
@@ -337,9 +348,25 @@
       <div id="tsOut" style="margin-top:10px"></div>
       <div class="row" style="margin-top:10px"><button class="primary" id="btnTs">↻ Update time series</button></div>
     </div>
+    </details>
+    <details class="tsfold" id="lbFold"><summary>Forecast look-back: how past runs forecast the valid time (click to show / hide)</summary>
+    <div style="padding:10px 12px">
+      <div class="row" style="flex-wrap:wrap;gap:10px 18px;font-size:18px">
+        <label>Site <select id="lbSite"></select></label>
+        <label>Parameter <select id="lbParam"></select></label>
+        <label>Model <select id="lbModel"><option value="nbm">NBM</option><option value="hrrr">HRRR</option><option value="rrfs">RRFS (deterministic)</option><option value="rrfsens" selected>RRFS ensemble (deterministic + 5 members)</option><option value="hrrrens">HRRR ensemble (8 time-lagged cycles)</option><option value="blend">Model blend (Point samples sources with past runs)</option></select></label>
+        <label>Look back <select id="lbBack"><option value="12">12 h</option><option value="24" selected>24 h</option><option value="36">36 h</option><option value="48">48 h</option><option value="72">72 h</option><option value="96">96 h</option></select></label>
+        <label>Runs <select id="lbStep"><option value="1">every run (hourly)</option><option value="3" selected>every 3 h</option><option value="6">every 6 h</option></select></label>
+      </div>
+      <p class="hint" style="font-size:16px;margin:8px 0 0">Each point is one model run's forecast for the valid date and hour at the top of the page; the newest run is on the right. Colours follow "Colour by" above. RRFS ensemble members run every 6 h. NWS Forecast, Gridded LAMP and the Open-Meteo global ensembles keep no past runs, so the blend look-back leaves them out.</p>
+      <details class="howto"><summary>How this is made</summary><p class="hint">For every run in the look-back window the page opens that run's own files on the NOAA archives (HRRR, RRFS, RRFS ensemble members and probabilities, NBM core and wind percentiles) and IEM's archive of GFS MOS / LAMP runs, takes the forecast for the selected valid hour, and works it out exactly like the Point samples tables: 10 NM sampling, members pooled with each source's weight split across its members, wind mean / 99th percentile / exceedance, weather chances, and ceiling / visibility as the members' median. HRRR ensemble at a run uses that run and the seven before it. The plume shows every member's value, the shaded band is the 10–90% range and the white line is the result used in the tables. Runs not posted yet, or older than the archive keeps, are skipped.</p></details>
+      <div id="lbOut" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:10px"><button class="primary" id="btnLb">↻ Run look-back</button><span class="hint" id="lbState"></span></div>
+    </div>
+    </details>
   </section>
   <div id="tab-synoptic" class="tabpane" style="display:none">
-    <details class="howto" style="width:100%"><summary>How this is made</summary><p class="hint">WPC's surface analysis / forecast chart (fronts, isobars, high and low centres and NDFD weather) for the frame nearest the valid time: short-range charts out to about 2.5 days, then the day 3–7 charts. Four frames are shown: the one nearest the valid time (outlined) plus the frame before it and the two after it. Each image is cropped to the West, with the east edge near the Four Corners and the bottom above the NDFD legend, and shows the chart only. WPC's own printed valid-time stamp, cut from the same image, sits above each chart so you can confirm which forecast was fetched. Frames come from the short-range charts every 6 h from the latest 00Z/12Z package, then the day 3–7 charts at 12Z. Use Open ↗ to see WPC's full chart.</p></details>
+    <details class="howto" style="width:100%"><summary>How this is made</summary><p class="hint">WPC's surface analysis / forecast chart (fronts, isobars, high and low centres and NDFD weather) for the frame nearest the valid time on the selected day: short-range charts out to about 2.5 days, then the day 3–7 charts. Four frames are shown: the one nearest the valid time (outlined) plus the frame before it and the two after it. Each image is cropped to the West, with the east edge near the Four Corners and the bottom above the NDFD legend, and shows the chart only. WPC's own printed valid-time stamp, cut from the same image, sits above each chart so you can confirm which forecast was fetched. Frames come from the short-range charts every 6 h from the latest 00Z/12Z package, then the day 3–7 charts at 12Z. Use Open ↗ to see WPC's full chart.</p></details>
     <div id="synCards" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start"></div>
   </div>
   <div id="tab-glmp" class="tabpane" style="display:none">
@@ -544,6 +571,10 @@
   async function findQmd(vt){ return findNbm("qmd", vt, f => "WIND:10 m above ground:" + f + " hour fcst"); }
   // Model fallback: exact valid hour from the newest run that has it (older runs tried first by each finder),
   // then the nearest hour that any recent run has (±1, ±2, ±3 h). Network/CORS failures are not retried.
+  // label for data taken from a different hour than the one selected (a run that ends before the selected time uses its last hour)
+  function fbText(off, vt){ if (!off) return ""; const used = new Date(vt.getTime() + off * 3.6e6), z = d => String(d.getUTCHours()).padStart(2, "0") + "Z";
+    return off < 0 ? `selected time is past this run: showing its last available hour, ${z(used)} (${off} h)` : `nearest available hour, ${z(used)} (+${off} h)`; }
+  const fbTag = (off, vt) => off ? ` <b class="fbtag">⚠ ${fbText(off, vt)}</b>` : "";
   async function nearestHour(fn, vt, offs){
     let last = "";
     for (const off of offs || [0, 1, -1, 2, -2, 3, -3]) {
@@ -1095,10 +1126,26 @@
   /* Weather limits used by every table and chart: ceiling at or below 500 ft, visibility at or below 1 NM (1852 m).
      Probability products only come at fixed thresholds (1 SM, then 2 SM / 3200 m / 3 SM), so P(vis ≤ 1 NM) is
      interpolated between the two nearest thresholds in log(visibility). */
-  const CIG_LIM_M = 152.4, CIG_LIM_FT = 500, VIS_LIM_M = 1852;
+  let CIG_LIM_M = 152.4, CIG_LIM_FT = 500, VIS_LIM_M = 1852;
+  const cigTxt = () => CIG_LIM_FT.toLocaleString("en-US") + " ft";
+  const visTxt = () => ({ 805: "1/2 SM", 1207: "3/4 SM", 1609: "1 SM", 1852: "1 NM", 2414: "1 1/2 SM", 3219: "2 SM", 4828: "3 SM" })[VIS_LIM_M] || (VIS_LIM_M / 1609.344).toFixed(2) + " SM";
+  const LIMK = () => "|L" + CIG_LIM_FT + "/" + VIS_LIM_M;
+  // a probability record (".. prob <X:") only counts when its threshold is within 5% of the chosen limit
+  const nearThr = (l, lim) => { const t = parseFloat(String(l).split("prob <")[1]); return isFinite(t) && Math.abs(t - lim) <= lim * 0.05; };
+  // when a source has no probability at the chosen limit, count its own deterministic ceiling / visibility instead
+  const detCV = o => { if (o.c == null && o.cr != null) o.c = o.cr <= CIG_LIM_FT ? 1 : 0; if (o.v == null && o.vr != null) o.v = o.vr * 1609.34 <= VIS_LIM_M ? 1 : 0; return o; };
+  // MOS / LAMP category bounds (ft, SM): chance that a forecast category is at or below the limit (visibility: log-interpolated)
+  const MOS_CIG_B = { 1: [0, 200], 2: [200, 500], 3: [500, 1000], 4: [1000, 2000], 5: [2000, 3100], 6: [3100, 6600], 7: [6600, 12000], 8: [12000, 1e9] };
+  const MOS_VIS_B = { 1: [0, 0.5], 2: [0.5, 1], 3: [1, 2], 4: [2, 3], 5: [3, 6], 6: [6, 6.5], 7: [6.5, 1e3] };
+  const catFrac = (b, lim, log) => !b ? null : lim <= b[0] ? 0 : lim >= b[1] ? 1 : log && b[0] > 0 ? Math.log(lim / b[0]) / Math.log(b[1] / b[0]) : (lim - b[0]) / (b[1] - b[0]);
+  const mosC = cat => catFrac(MOS_CIG_B[cat], CIG_LIM_FT), mosV = cat => catFrac(MOS_VIS_B[cat], VIS_LIM_M / 1609.34, true);
   // MOS / LAMP category → representative value (category middle) for the ceiling and visibility medians
   const MOS_CIG_FT = { 1: 100, 2: 300, 3: 700, 4: 1500, 5: 2500, 6: 4800, 7: 9300, 8: 1e6 }, MOS_VIS_SM = { 1: 0.25, 2: 0.75, 3: 1.5, 4: 2.5, 5: 4, 6: 6, 7: 10 };
-  const visLimP = (pLo, tLo, pHi, tHi) => pLo == null ? null : pHi == null ? pLo : Math.min(100, Math.max(pLo, pLo + (pHi - pLo) * Math.log(VIS_LIM_M / tLo) / Math.log(tHi / tLo)));
+  // null when the limit is outside the thresholds the product carries (the source then counts its deterministic visibility)
+  const visLimP = (pLo, tLo, pHi, tHi) => { if (pLo == null) return null; const L = VIS_LIM_M;
+    if (L < tLo * 0.97) return null; if (L <= tLo * 1.03) return pLo;
+    if (pHi == null) return L <= tLo * 1.2 ? pLo : null; if (L > tHi * 1.03) return null;
+    return Math.min(100, Math.max(pLo, pLo + (pHi - pLo) * Math.log(Math.min(L, tHi) / tLo) / Math.log(tHi / tLo))); };
   function sitePts(){
     const d = sdw.data, user = parsePoints($("pts").value).pts;
     return d.sites.map(s => { const la = s.lat ?? s.latitude, lo = s.lon ?? s.longitude;
@@ -1120,7 +1167,7 @@
     const fv = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l)), fv2 = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <3200:/.test(l));
     let fc = null;
     if (qp) { const cands = qp.idx.split("\n").filter(l => /:HGT:cloud ceiling:\d+ hour fcst:prob </.test(l));
-      const pick = cands.sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - 152.4) - Math.abs(parseFloat(y.split("prob <")[1]) - 152.4))[0];
+      const pick = cands.filter(l => nearThr(l, CIG_LIM_M)).sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - CIG_LIM_M) - Math.abs(parseFloat(y.split("prob <")[1]) - CIG_LIM_M))[0];
       if (pick) fc = await grab(qp, l => l === pick); }
     const fl = await grab(qp, l => /:LTNG:.*prob >/.test(l));
     pts.forEach((p, si) => { const id = sdw.data.sites[si].id;
@@ -1190,7 +1237,7 @@
     const r = p => { const i = ORDER.indexOf(p.name.trim().toUpperCase()); return i < 0 ? 99 : i; };
     return pts.map((p, i) => ({ p, i })).sort((a, b) => r(a.p) - r(b.p) || a.i - b.i).map(x => x.p);
   }
-  async function rrfsDetFile(t){ return nearestHour(rrfsDetExact, t); }
+  async function rrfsDetFile(t){ return nearestHour(rrfsDetExact, t, [0, 1, -1, 2, -2, -3]); }
   async function rrfsDetExact(t){
     const top = Math.floor(Date.now() / 3.6e6) * 3.6e6;
     for (let k = 0; k < 30; k++) {
@@ -1232,7 +1279,7 @@
     const fv = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l)), fv2 = await grab(qp, l => /:VIS:surface:\d+ hour fcst:prob <3200:/.test(l));
     let fc = null;
     if (qp) { const c = qp.idx.split("\n").filter(l => /:HGT:cloud ceiling:\d+ hour fcst:prob </.test(l))
-        .sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - 152.4) - Math.abs(parseFloat(y.split("prob <")[1]) - 152.4))[0];
+        .filter(l => nearThr(l, CIG_LIM_M)).sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - CIG_LIM_M) - Math.abs(parseFloat(y.split("prob <")[1]) - CIG_LIM_M))[0];
       if (c) fc = await grab(qp, l => l === c); }
     return { cyc: (qm || qp || qe).cyc, vals: sites.map(p => { const o = {};
       if (fw) { const x = area(fw, p, "mean"); if (x != null) o.w = x * 1.943844; }
@@ -1331,10 +1378,10 @@
     throw new Error("no recent HRRR run found");
   }
   async function hrrrFile(L, t){
-    if (L) return hrrrExact(L, t);
+    if (L) return hrrrExact(L, t).catch(e => { if (!/beyond/.test(e.message)) throw e; return nearestHour(T => hrrrExact(L, T), t, [-1, -2, -3]); });
     return nearestHour(async T => { let last = "";
       for (let k = 0; k < 13; k++) { try { return await hrrrExact(k, T); } catch (e) { last = e.message; if (/before this cycle/.test(last)) continue; } }
-      throw new Error(last); }, t, [0, 1, -1]);
+      throw new Error(last); }, t, [0, 1, -1, -2, -3]);
   }
   async function hrrrExact(L, t){
     const cyc = new Date((await hrrrLatest()).getTime() - L * 3.6e6), f = Math.round((t - cyc) / 3.6e6);
@@ -1388,23 +1435,40 @@
       t: c2f(tt), td: c2f(td), qpf: qp?.value == null ? null : qp.value / 25.4 / Math.max(1, qp.hours) };
   }
   // one source, one hour → { members: [{id, vals:[per site]}], cyc, note }
-  async function pbFetch(src, t, sites, hrs){
+  /* ---- Explicit-run file access for the forecast look-back: the file of one given model run (no newest-run search) ---- */
+  const LB_H = 3.6e6, ymdh = c => [c.toISOString().slice(0,10).replace(/-/g,""), c.toISOString().slice(11,13)];
+  async function idxAt(url){ if (!(url in refsIdx)) { try { const r = await fetch(url + ".idx", { cache: "no-store" }); refsIdx[url] = r.ok ? await r.text() : null; } catch (e) { refsIdx[url] = null; } } return refsIdx[url]; }
+  async function fileAt(kind, cyc, t){
+    const f = Math.round((t - cyc) / LB_H), [ymd, hh] = ymdh(cyc); if (f < 1) throw new Error("valid time is before this run");
+    let url;
+    if (kind === "hrrr") { if (f > (cyc.getUTCHours() % 6 ? 18 : 48)) throw new Error("beyond this run"); url = `https://noaa-hrrr-bdp-pds.s3.amazonaws.com/hrrr.${ymd}/conus/hrrr.t${hh}z.wrfsfcf${String(f).padStart(2,"0")}.grib2`; }
+    else if (kind === "rrfs") { if (f > 84) throw new Error("beyond this run"); url = `${REFS_S3}/rrfs.${ymd}/${hh}/rrfs.t${hh}z.2dfld.3km.f${String(f).padStart(3,"0")}.conus.grib2`; }
+    else if (kind.startsWith("m0")) { if (f > 60) throw new Error("beyond this run"); url = `${REFS_S3}/rrfsens.${ymd}/${hh}/${kind}/rrfs.t${hh}z.${kind}.2dfldnomads.3km.f${String(f).padStart(3,"0")}.conus.grib2`; }
+    else if (kind.startsWith("refs:")) { if (f > 60) throw new Error("beyond this run"); const ty = kind.slice(5); url = `${REFS_S3}/refs.${ymd}/${hh}/ensprod/refs.t${hh}z.${ty}.f${String(f).padStart(2,"0")}.conus.grib2`; }
+    else { url = `${NBM_S3}/blend.${ymd}/${hh}/${kind}/blend.t${hh}z.${kind}.f${String(f).padStart(3,"0")}.co.grib2`; }
+    const pm = kind === "core" || kind === "qmd" ? "nbm" : kind.startsWith("refs:") ? "refs" : null;
+    const idx = (pm ? await preIdx(pm, url).catch(() => null) : null) || await idxAt(url);
+    if (!idx) throw new Error("file not on the archive"); return { url, idx, cyc, f };
+  }
+  const floorH = (t, h) => new Date(Math.floor(t / (h * LB_H)) * h * LB_H);
+  async function pbFetch(src, t, sites, hrs, run){
     const T = new Date(t);
-    if (src.kind === "hrrr") { const q = await hrrrFile(src.lag, T); return { members: [{ id: src.id, vals: await hrrrSample(q, sites) }], cyc: q.cyc }; }
-    if (src.kind === "rrfs") { const q = await rrfsDetFile(T); return { members: [{ id: "det", vals: await detSample(q, sites) }], cyc: q.cyc }; }
-    if (src.kind === "mem") { const q = await rrfsMemFile(src.id, T); return { members: [{ id: src.id, vals: await detSample(q, sites) }], cyc: q.cyc }; }
+    if (run) return pbFetchRun(src, t, sites, run);
+    if (src.kind === "hrrr") { const q = await hrrrFile(src.lag, T); return { members: [{ id: src.id, vals: await hrrrSample(q, sites) }], cyc: q.cyc, off: q.offset }; }
+    if (src.kind === "rrfs") { const q = await rrfsDetFile(T); return { members: [{ id: "det", vals: await detSample(q, sites) }], cyc: q.cyc, off: q.offset }; }
+    if (src.kind === "mem") { const q = await rrfsMemFile(src.id, T); return { members: [{ id: src.id, vals: await detSample(q, sites) }], cyc: q.cyc, off: q.off }; }
     if (src.kind === "nbmp" || src.kind === "nbmw" || src.kind === "nbmq") {
       const g = (q, test) => { if (!q) return Promise.resolve(null); const r = idxRecord(q, test); return r ? cachedRange(q.url, r) : Promise.resolve(null); };
       if (src.kind === "nbmp") {
         const qc = await findNbm("core", T, f => `:APCP:surface:${f-1}-${f} hour acc fcst:prob >0.254:`, 36);
         const [fp, ft, fc, fv] = await Promise.all([g(qc, l => l.indexOf(`:APCP:surface:${qc.f-1}-${qc.f} hour acc fcst:prob >0.254:`) >= 0), g(qc, l => l.indexOf(`:TSTM:surface:${qc.f-1}-${qc.f} hour acc fcst:`) >= 0),
-          g(qc, l => /:CEIL:cloud ceiling:\d+ hour fcst:prob <152\.4:/.test(l)), g(qc, l => /:VIS:surface:\d+ hour fcst:prob <1609\.34:/.test(l))]);
+          g(qc, l => /:CEIL:cloud ceiling:\d+ hour fcst:prob </.test(l) && nearThr(l, CIG_LIM_M)), g(qc, l => /:VIS:surface:\d+ hour fcst:prob <1609\.34:/.test(l))]);
         const [fv2, fcd, fvd] = await Promise.all([g(qc, l => /:VIS:surface:\d+ hour fcst:prob <3218\.69:/.test(l)), g(qc, l => /:CEIL:cloud ceiling:\d+ hour fcst:$/.test(l.trim())), g(qc, l => /:VIS:surface:\d+ hour fcst:$/.test(l.trim()))]);
         return { cyc: qc.cyc, members: [{ id: "prob", vals: sites.map(p => { const o = {};
           if (fp) { const x = area(fp, p, "max"); if (x != null) o.p = x / 100; } if (ft) { const x = area(ft, p, "max"); if (x != null) o.l = x / 100; }
           if (fc) { const x = area(fc, p, "mean"); if (x != null) o.c = x / 100; }
           if (fv) { const x = visLimP(area(fv, p, "mean"), 1609.34, fv2 ? area(fv2, p, "mean") : null, 3218.69); if (x != null) o.v = x / 100; }
-          if (fcd) { const x = area(fcd, p, "mean"); o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; } if (fvd) { const x = area(fvd, p, "mean"); if (x != null) o.vr = x / 1609.34; } return o; }) }] };
+          if (fcd) { const x = area(fcd, p, "mean"); o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; } if (fvd) { const x = area(fvd, p, "mean"); if (x != null) o.vr = x / 1609.34; } return detCV(o); }) }] };
       }
       if (src.kind === "nbmw") {
         const q = await findNbm("core", T, f => ":WIND:10 m above ground:" + f + " hour fcst:"), fw = await g(q, l => /:WIND:10 m above ground:\d+ hour fcst:$/.test(l.trim()));
@@ -1416,7 +1480,7 @@
     }
     if (src.kind === "refs") {
       const qp = await findRefs("prob", T); let fc = null;
-      const cand = qp.idx.split("\n").filter(l => /:HGT:cloud ceiling:\d+ hour fcst:prob </.test(l)).sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - 152.4) - Math.abs(parseFloat(y.split("prob <")[1]) - 152.4))[0];
+      const cand = qp.idx.split("\n").filter(l => /:HGT:cloud ceiling:\d+ hour fcst:prob </.test(l)).filter(l => nearThr(l, CIG_LIM_M)).sort((x, y) => Math.abs(parseFloat(x.split("prob <")[1]) - CIG_LIM_M) - Math.abs(parseFloat(y.split("prob <")[1]) - CIG_LIM_M))[0];
       const rv = idxRecord(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l)), rv2 = idxRecord(qp, l => /:VIS:surface:\d+ hour fcst:prob <3200:/.test(l)), rc = cand ? idxRecord(qp, l => l === cand) : null;
       const [c, v, v2] = await Promise.all([rc ? cachedRange(qp.url, rc) : null, rv ? cachedRange(qp.url, rv) : null, rv2 ? cachedRange(qp.url, rv2) : null]);
       return { cyc: qp.cyc, members: [{ id: "refs", vals: sites.map(p => { const o = {}; if (c) { const x = area(c, p, "mean"); if (x != null) o.c = x / 100; }
@@ -1424,8 +1488,8 @@
     }
     if (src.kind === "glmpp") {
       const r = await glmpProbs(T);
-      return { cyc: r.cyc, members: [{ id: "glmp", vals: sites.map(p => { const o = {}; if (r.c) { const x = area(r.c, p, "mean"); if (x != null) o.c = x / 100; } if (r.v) { const x = visLimP(area(r.v, p, "mean"), 1609.34, r.v3 ? area(r.v3, p, "mean") : null, 4828.03); if (x != null) o.v = x / 100; }
-        if (r.cd) { const x = area(r.cd, p, "mean"); o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; } if (r.vd) { const x = area(r.vd, p, "mean"); if (x != null) o.vr = x / 1609.34; } return o; }) }] };
+      return { cyc: r.cyc, off: r.off, members: [{ id: "glmp", vals: sites.map(p => { const o = {}; if (r.c) { const x = area(r.c, p, "mean"); if (x != null) o.c = x / 100; } if (r.v) { const x = visLimP(area(r.v, p, "mean"), 1609.34, r.v3 ? area(r.v3, p, "mean") : null, 4828.03); if (x != null) o.v = x / 100; }
+        if (r.cd) { const x = area(r.cd, p, "mean"); o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; } if (r.vd) { const x = area(r.vd, p, "mean"); if (x != null) o.vr = x / 1609.34; } return detCV(o); }) }] };
     }
     if (src.kind === "nws") {
       const vals = await Promise.all(sites.map(async p => { try { const x = await nwsSite(p, t), o = {};
@@ -1440,7 +1504,7 @@
       const members = [];
       for (let r = 0; r < nRuns; r++) members.push({ id: "run" + r, vals: per.map(x => { const run = x && x.runs[r]; if (!run) return {};
         let best = null; for (const row of run) { const d = Math.abs(Date.parse(row.ftime_utc + "Z") - t); if (d <= (src.step === 1 ? 0.5 : 1.5) * 3.6e6 && (!best || d < best[0])) best = [d, row]; }
-        if (!best) return {}; const o = {}, row = best[1]; if (row.cig != null) { o.c = row.cig <= 2 ? 1 : 0; o.cr = MOS_CIG_FT[row.cig] ?? null; } if (row.vis != null) o.vr = MOS_VIS_SM[row.vis] ?? null; if (row.vis != null) o.v = row.vis <= 2 ? 1 : row.vis == 3 ? Math.log(VIS_LIM_M / 1609.34) / Math.log(2) : 0; return o; }) });
+        if (!best) return {}; const o = {}, row = best[1]; if (row.cig != null) { o.c = mosC(row.cig); o.cr = MOS_CIG_FT[row.cig] ?? null; } if (row.vis != null) o.vr = MOS_VIS_SM[row.vis] ?? null; if (row.vis != null) o.v = mosV(row.vis); return o; }) });
       per.forEach((x, i) => { if (x) notes.push(`${sites[i].name}: ${x.st} (${x.dnm} NM)`); });
       return { cyc: per.find(Boolean)?.rt, members, note: notes.join("; ") };
     }
@@ -1451,6 +1515,47 @@
       return { cyc: null, members: ids.map(id => ({ id, vals: per.map(a => (a.find(m => m.id === id) || {}).r || {}) })) };
     }
     throw new Error("unknown source");
+  }
+  // the same member values as pbFetch, but from one stated model run (forecast look-back); sources without an archive refuse
+  async function pbFetchRun(src, t, sites, run){
+    const T = new Date(t), R = new Date(run), g = (q, test) => { const r = idxRecord(q, test); return r ? cachedRange(q.url, r) : Promise.resolve(null); };
+    if (src.kind === "hrrr") { const q = await fileAt("hrrr", new Date(R - src.lag * LB_H), T); return { members: [{ id: src.id, vals: await hrrrSample(q, sites) }], cyc: q.cyc }; }
+    if (src.kind === "rrfs") { const q = await fileAt("rrfs", R, T); return { members: [{ id: "det", vals: await detSample(q, sites) }], cyc: q.cyc }; }
+    if (src.kind === "mem") { const q = await fileAt(src.id, floorH(R, 6), T); return { members: [{ id: src.id, vals: await detSample(q, sites) }], cyc: q.cyc }; }
+    if (src.kind === "nbmp" || src.kind === "nbmw") {
+      const qc = await fileAt("core", R, T), f = qc.f;
+      if (src.kind === "nbmw") { const fw = await g(qc, l => /:WIND:10 m above ground:\d+ hour fcst:$/.test(l.trim()));
+        return { cyc: qc.cyc, members: [{ id: "nbm", vals: sites.map(p => { const x = fw ? area(fw, p, "mean") : null; return x == null ? {} : { w: x * 1.943844 }; }) }] }; }
+      const [fp, ft, fc, fv, fv2, fcd, fvd] = await Promise.all([g(qc, l => l.indexOf(`:APCP:surface:${f-1}-${f} hour acc fcst:prob >0.254:`) >= 0), g(qc, l => l.indexOf(`:TSTM:surface:${f-1}-${f} hour acc fcst:`) >= 0),
+        g(qc, l => /:CEIL:cloud ceiling:\d+ hour fcst:prob </.test(l) && nearThr(l, CIG_LIM_M)), g(qc, l => /:VIS:surface:\d+ hour fcst:prob <1609\.34:/.test(l)), g(qc, l => /:VIS:surface:\d+ hour fcst:prob <3218\.69:/.test(l)),
+        g(qc, l => /:CEIL:cloud ceiling:\d+ hour fcst:$/.test(l.trim())), g(qc, l => /:VIS:surface:\d+ hour fcst:$/.test(l.trim()))]);
+      return { cyc: qc.cyc, members: [{ id: "prob", vals: sites.map(p => { const o = {};
+        if (fp) { const x = area(fp, p, "max"); if (x != null) o.p = x / 100; } if (ft) { const x = area(ft, p, "max"); if (x != null) o.l = x / 100; }
+        if (fc) { const x = area(fc, p, "mean"); if (x != null) o.c = x / 100; }
+        if (fv) { const x = visLimP(area(fv, p, "mean"), 1609.34, fv2 ? area(fv2, p, "mean") : null, 3218.69); if (x != null) o.v = x / 100; }
+        if (fcd) { const x = area(fcd, p, "mean"); o.cr = x == null || x > 6096 ? 1e6 : x * 3.28084; } if (fvd) { const x = area(fvd, p, "mean"); if (x != null) o.vr = x / 1609.34; } return detCV(o); }) }] };
+    }
+    if (src.kind === "nbmq") { let q = null; for (let k = 0; k < 8 && !q; k++) q = await fileAt("qmd", new Date(R - k * LB_H), T).catch(() => null); if (!q) throw new Error("no QMD run");
+      const [fm, fs] = await Promise.all([g(q, l => l.indexOf(`:WIND:10 m above ground:${q.f} hour fcst:ens mean`) >= 0), g(q, l => l.indexOf(`:WIND:10 m above ground:${q.f} hour fcst:ens std dev`) >= 0)]);
+      return { cyc: q.cyc, members: [{ id: "pct", pct: true, vals: sites.map(p => { const m = fm ? area(fm, p, "mean") : null, sd = fs ? area(fs, p, "mean") : null;
+        return m == null || sd == null ? {} : { wm: m * 1.943844, w99: (m + 2.326 * sd) * 1.943844 }; }) }] }; }
+    if (src.kind === "refs") { const qp = await fileAt("refs:prob", floorH(R, 6), T);
+      const rc = idxRecord(qp, l => /:HGT:cloud ceiling:\d+ hour fcst:prob </.test(l) && nearThr(l, CIG_LIM_M)), rv = idxRecord(qp, l => /:VIS:surface:\d+ hour fcst:prob <1600:/.test(l)), rv2 = idxRecord(qp, l => /:VIS:surface:\d+ hour fcst:prob <3200:/.test(l));
+      const [c, v, v2] = await Promise.all([rc ? cachedRange(qp.url, rc) : null, rv ? cachedRange(qp.url, rv) : null, rv2 ? cachedRange(qp.url, rv2) : null]);
+      return { cyc: qp.cyc, members: [{ id: "refs", vals: sites.map(p => { const o = {}; if (c) { const x = area(c, p, "mean"); if (x != null) o.c = x / 100; }
+        if (v) { const x = visLimP(area(v, p, "mean"), 1600, v2 ? area(v2, p, "mean") : null, 3200); if (x != null) o.v = x / 100; } return o; }) }] }; }
+    if (src.kind === "mos") {
+      const rt = floorH(R, src.step === 1 ? 1 : 6), rts = rt.toISOString().slice(0, 16).replace("T", " "), vals = [];
+      for (const p of sites) { const list = await nearStations(p).catch(() => []), st = list.map(x => [x, nmDist(p.lat, p.lon, x[1], x[2])]).sort((a, b) => (a[0][3] > 100) - (b[0][3] > 100) || a[1] - b[1]);
+        let o = {}; for (const [x] of st.slice(0, 5)) { const run = await mosRun(src.model, x[0], rts); if (!run) continue;
+          let best = null; for (const row of run) { const d = Math.abs(Date.parse(row.ftime_utc + "Z") - t); if (d <= (src.step === 1 ? 0.5 : 1.5) * LB_H && (!best || d < best[0])) best = [d, row]; }
+          if (best) { const row = best[1]; if (row.cig != null) { o.c = mosC(row.cig); o.cr = MOS_CIG_FT[row.cig] ?? null; } if (row.vis != null) { o.vr = MOS_VIS_SM[row.vis] ?? null; o.v = mosV(row.vis); } }
+          break; }
+        vals.push(o); }
+      if (!vals.some(o => Object.keys(o).length)) throw new Error("no MOS run");
+      return { cyc: rt, members: [{ id: "run", vals }] };
+    }
+    throw new Error("no archive of past runs");
   }
   /* Evaluate one site over a list of hours; every value is the average of the hourly values.
      Wind, each hour:
@@ -1534,18 +1639,19 @@
     const R = pbSiteHours(si, hrs, data); if (!R.some(r => r.n || r.e.wx.p != null)) return { html: "", R };
     const Wd = 1000, L = 46, Rm = 14, n = hrs.length, X = i => L + (Wd - L - Rm) * i / Math.max(1, n - 1);
     const vi = Math.max(0, hrs.indexOf(Math.floor(vt / 3.6e6) * 3.6e6));
-    const xlab = (T, B) => hrs.map((t, i) => { const d = new Date(t); if (d.getUTCHours() % 6) return "";
-        return `<line x1="${X(i)}" x2="${X(i)}" y1="${T}" y2="${B}" stroke="#223040"/>` + (d.getUTCHours() % 12 ? "" : `<text x="${X(i)}" y="${B + 16}" fill="#9fb3c8" font-size="13" text-anchor="middle">${d.getUTCDate()}/${String(d.getUTCHours()).padStart(2, "0")}Z</text>`); }).join("");
+    // x axis: 6-hourly lines with a date/time label, fainter 3-hourly lines in between
+    const xlab = (T, B) => hrs.map((t, i) => { const d = new Date(t), h = d.getUTCHours(); if (h % 3) return "";
+        if (h % 6) return `<line x1="${X(i)}" x2="${X(i)}" y1="${T}" y2="${B}" stroke="#223040" stroke-opacity=".7" stroke-dasharray="3 3"/>`;
+        return `<line x1="${X(i)}" x2="${X(i)}" y1="${T}" y2="${B}" stroke="#223040"/>` + (`<text x="${X(i)}" y="${B + 16}" fill="#9fb3c8" font-size="13" text-anchor="${X(i) > Wd - Rm - 24 ? "end" : "middle"}">${d.getUTCDate()}/${String(d.getUTCHours()).padStart(2, "0")}Z</text>`); }).join("");
     const path = (vals, Y) => { let d = "", pen = false; vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + X(i).toFixed(1) + "," + Y(v).toFixed(1); pen = true; }); return d; };
     // wind chart
     const thr = thrKt(), all = R.flatMap(r => r.lines.map(x => x[1])).concat(R.map(r => r.e.p99).filter(v => v != null));
-    const top = Math.max(20, Math.ceil((Math.max(thr, ...all) + 2) / 5) * 5), H1 = 300, T1 = 10, B1 = H1 - 44, Y1 = v => B1 - (B1 - T1) * Math.min(v, top) / top;
+    const top = Math.max(20, Math.ceil((Math.max(0, ...all) + 2) / 5) * 5), H1 = 300, T1 = 10, B1 = H1 - 44, Y1 = v => B1 - (B1 - T1) * Math.min(v, top) / top;
     const ids = [...new Set(R.flatMap(r => r.lines.map(x => x[0])))];
     let w = `<svg class="pbchart" viewBox="0 0 ${Wd} ${H1}" data-h="${H1}">`;
     for (let k = 0; k <= top; k += 5) w += `<line x1="${L}" x2="${Wd - Rm}" y1="${Y1(k)}" y2="${Y1(k)}" stroke="#223040"/><text x="${L - 6}" y="${Y1(k) + 4}" fill="#9fb3c8" font-size="13" text-anchor="end">${k}</text>`;
     w += xlab(T1, B1);
     ids.forEach(id => { const d = path(R.map(r => { const x = r.lines.find(l => l[0] === id); return x ? x[1] : null; }), Y1); if (d) w += `<path d="${d}" fill="none" stroke="#8a99aa" stroke-opacity="${ids.length > 60 ? .28 : .45}" stroke-width="1"/>`; });
-    w += `<line x1="${L}" x2="${Wd - Rm}" y1="${Y1(thr)}" y2="${Y1(thr)}" stroke="#4aa3ff" stroke-dasharray="7 5" stroke-width="1.5"/><text x="${Wd - Rm - 4}" y="${Y1(thr) - 5}" fill="#4aa3ff" font-size="13" font-weight="700" text-anchor="end" stroke="#141a22" stroke-width="4" paint-order="stroke">${thr} KT threshold</text>`;
     w += `<path d="${path(R.map(r => r.e.p99), Y1)}" fill="none" stroke="#ff5d5d" stroke-width="2" stroke-dasharray="6 4"/><path d="${path(R.map(r => r.e.mean), Y1)}" fill="none" stroke="#fff" stroke-width="3"/>`;
     // wind status strip
     const sw = (Wd - L - Rm) / Math.max(1, n - 1);
@@ -1557,13 +1663,13 @@
     let x = `<svg class="pbchart" viewBox="0 0 ${Wd} ${H2}" data-h="${H2}">`;
     [0, 20, 50, 100].forEach(k => x += `<line x1="${L}" x2="${Wd - Rm}" y1="${Y2(k)}" y2="${Y2(k)}" stroke="${k === 20 || k === 50 ? "#3a4b5e" : "#223040"}"/><text x="${L - 6}" y="${Y2(k) + 4}" fill="#9fb3c8" font-size="13" text-anchor="end">${k}%</text>`);
     x += xlab(T2, B2);
-    const WX = [["p", "#3b8bff", "", "Precip ≤10 NM"], ["l", "#e0a800", "", "Lightning ≤10 NM"], ["c", "#a77bff", "", "Ceiling ≤500 ft"], ["cs", "#a77bff", "6 4", "Ceiling stand-in"], ["v", "#c5ced8", "", "Visibility ≤1 NM"]];
+    const WX = [["p", "#3b8bff", "", "Precip ≤10 NM"], ["l", "#e0a800", "", "Lightning ≤10 NM"], ["c", "#a77bff", "", "Ceiling ≤" + cigTxt()], ["cs", "#a77bff", "6 4", "Ceiling stand-in"], ["v", "#c5ced8", "", "Visibility ≤" + visTxt()]];
     WX.forEach(([k, c, dash]) => { const vals = R.map(r => k === "cs" ? (r.e.si.c ? r.e.wx.c : null) : k === "c" ? (r.e.si.c ? null : r.e.wx.c) : r.e.wx[k]);
       const d = path(vals, Y2); if (d) x += `<path d="${d}" fill="none" stroke="${c}" stroke-width="2.2"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`; });
     x += `<line x1="${X(vi)}" x2="${X(vi)}" y1="${T2}" y2="${B2}" stroke="#fff" stroke-opacity=".55" stroke-dasharray="3 4" class="pbvalid"/><line class="pbhov" x1="0" x2="0" y1="${T2}" y2="${B2}" stroke="#ffd166" stroke-width="1.5" visibility="hidden"/></svg>`;
     const leg = items => `<span class="pbleg">${items.map(([c, dash, t]) => `<span><i style="border-top:3px ${dash ? "dashed" : "solid"} ${c}"></i>${t}</span>`).join("")}</span>`;
     const html = `<div class="pbcharts" data-chartsite="${si}"><div class="pbcl">
-        <h4>10 m wind, every member · ${esc(name)} ${leg([["#8a99aa", "", "Members"], ["#fff", "", "Mean"], ["#ff5d5d", "1", "99th percentile"], ["#4aa3ff", "1", "Threshold"]])}</h4>${w}
+        <h4>10 m wind, every member · ${esc(name)} ${leg([["#8a99aa", "", "Members"], ["#fff", "", "Mean"], ["#ff5d5d", "1", "99th percentile"]])}</h4>${w}
         <h4>Hourly weather chances · ${esc(name)} ${leg(WX.map(([k, c, dash, t]) => [c, dash, t]))}</h4>${x}</div>
       <div class="pbread" data-read></div></div>`;
     return { html, R, vi, geo: { Wd, L, Rm, T1, B1, top, n } };
@@ -1573,7 +1679,7 @@
     const e = r.e, d = new Date(r.t), pc = v => v == null ? "–" : v + "%", kt = v => v == null ? "–" : v.toFixed(1) + " KT";
     const badge = e.cat == null ? `<span class="pbbadge" style="background:#2a3644">–</span>` : `<span class="pbbadge" style="background:${STAT_COL[e.cat]};color:${e.cat === 1 ? "#1b1300" : "#fff"}">${SDW_CAT[e.cat]}</span>`;
     const rows = [["Wind &gt;" + thrKt() + " KT", pc(e.pexc)], ["Precip within 10 NM", pc(e.wx.p)], ["Lightning within 10 NM", pc(e.wx.l)],
-      ["Ceiling ≤500 ft" + (e.si.c ? " (stand-in)" : ""), pc(e.wx.c)], ["Visibility ≤1 NM", pc(e.wx.v)], ["Any weather", pc(e.any)]];
+      ["Ceiling ≤" + cigTxt() + (e.si.c ? " (stand-in)" : ""), pc(e.wx.c)], ["Visibility ≤" + visTxt(), pc(e.wx.v)], ["Any weather", pc(e.any)]];
     return `<div class="pbrh"><b>${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCHours()).padStart(2, "0")}Z</b> <small>${esc(name)}</small></div>${badge}
       <p>Mean ${kt(e.mean)}, 99th percentile ${kt(e.p99)}${r.p10 != null ? `, 10–90% ${r.p10.toFixed(1)}–${r.p90.toFixed(1)} KT` : ""} (${e.wsrc === "nbm" ? "NBM distribution" : r.n + " member" + (r.n === 1 ? "" : "s")})</p>
       <table>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("")}</table>
@@ -1623,7 +1729,9 @@
       if (seq !== pbGridSeq) return; let charts = null;
       const ev = sites.map((p, si) => wins.map(w => pbEval(si, [w, w + 3.6e6, w + 7.2e6], gd)));
       const head = wins.map(w => { const d = new Date(w); return `<th class="${w === sel0 ? "selh" : ""}">${d.getUTCDate()}/${String(d.getUTCHours()).padStart(2,"0")}Z</th>`; }).join("");
-      const c = (cls, t, title, w) => `<td class="sd ${cls}${w === sel0 ? " sel" : ""}"${title ? ` title="${title}"` : ""}>${t}</td>`;
+      const c = (cls, t, title, w) => { const st = String(cls).startsWith("@") ? cls.slice(1).split("|") : null;
+        return `<td class="sd ${st ? "" : cls}${w === sel0 ? " sel" : ""}"${st ? ` style="background:${st[0]};color:${st[1]}"` : ""}${title ? ` title="${title}"` : ""}>${t}</td>`; };
+      const img = $("pbColor").value === "img";
       let h = `<h3 class="sdh">3-hour windows (Z): wind status / any weather <small class="hint">click a site for detail</small></h3><div class="sdscroll"><table class="sdt"><tr><th>Site</th><th></th>${head}</tr>`;
       sites.forEach((p, si) => {
         h += `<tr><td class="sdsite pbclick${pbSel === si ? " on" : ""}" rowspan="2" data-site="${si}">${esc(p.name)} ${pbSel === si ? "▾" : "▸"}</td><td class="sdrow">Mean wind<small>KT</small></td>` +
@@ -1635,14 +1743,14 @@
         const e = ev[pbSel], rows = [
           ["Mean wind", "KT", x => x.mean == null ? ["na", "–"] : [x.cat == null ? "na" : SDW_CC[x.cat], x.mean.toFixed(1)]],
           ["99th percentile", "KT", x => x.p99 == null ? ["na", "–"] : [x.cat == null ? "na" : SDW_CC[x.cat], x.p99.toFixed(1)]],
-          ["Wind exceedance", `chance &gt;${thrKt()} KT`, x => [sdwW(x.pexc), x.pexc == null ? "–" : x.pexc + "%"]],
-          ["Precip", "within 10 NM", x => [sdwW(x.wx.p), x.wx.p == null ? "–" : x.wx.p + "%"]],
-          ["Lightning", "within 10 NM", x => [sdwW(x.wx.l), x.wx.l == null ? "–" : x.wx.l + "%"]],
-          ["Ceiling", "at or below 500 ft", x => [sdwW(x.wx.c) + (x.si.c ? " si" : ""), x.wx.c == null ? "–" : x.wx.c + "%"]],
-          ["Visibility", "at or below 1 NM", x => [sdwW(x.wx.v), x.wx.v == null ? "–" : x.wx.v + "%"]],
+          ["Wind exceedance", `chance &gt;${thrKt()} KT`, x => [img ? scaleCls("wprob", x.pexc) : sdwW(x.pexc), x.pexc == null ? "–" : x.pexc + "%"]],
+          ["Precip", "within 10 NM", x => [img ? scaleCls("pop", x.wx.p) : sdwW(x.wx.p), x.wx.p == null ? "–" : x.wx.p + "%"]],
+          ["Lightning", "within 10 NM", x => [img ? scaleCls("pop", x.wx.l) : sdwW(x.wx.l), x.wx.l == null ? "–" : x.wx.l + "%"]],
+          ["Ceiling", "at or below " + cigTxt(), x => [scaleCls("wprob", x.wx.c), x.wx.c == null ? "–" : x.wx.c + "%"]],
+          ["Visibility", "at or below " + visTxt(), x => [scaleCls("wprob", x.wx.v), x.wx.v == null ? "–" : x.wx.v + "%"]],
           ["Ceiling", "median of members", x => [cvCat("c", x.cig50), cvFmt("c", x.cig50)]],
           ["Visibility", "median of members", x => [cvCat("v", x.vis50), cvFmt("v", x.vis50)]],
-          ["Any weather", "checked conditions", x => [sdwW(x.any), x.any == null ? "–" : x.any + "%"]]];
+          ["Any weather", "checked conditions", x => [img ? scaleCls("wprob", x.any) : sdwW(x.any), x.any == null ? "–" : x.any + "%"]]];
         h += `<h3 class="sdh">${esc(sites[pbSel].name)}: 3-hour detail</h3><div class="sdscroll"><table class="sdt"><tr><th></th>${head}</tr>` +
           rows.map(([n, sub, f]) => `<tr><td class="sdsite">${n}<small>${sub}</small></td>` + e.map((x, i) => { const [cl, t] = f(x); return c(cl, t, "", wins[i]); }).join("") + "</tr>").join("") + "</table></div>";
         charts = pbSiteCharts(pbSel, sites[pbSel].name, hrs, gd, vt);
@@ -1693,7 +1801,7 @@
   const TS_ENS = { rrfsens: s => s.kind === "rrfs" || s.kind === "mem", hrrrens: s => s.kind === "hrrr" };
   async function tsBlend(pid, t, p, ens){
     const sites = [p], key = p.lat + "," + p.lon, hrs = [t], data = {}, list = ens ? PB_SRC.filter(TS_ENS[ens]) : PB_SRC.filter(s => s.on);
-    await Promise.all(list.map(async s => { const ck = s.id + t + key + "|ts";
+    await Promise.all(list.map(async s => { const ck = s.id + t + key + "|ts" + LIMK();
       try { data[s.id + t] = await (pbCache[ck] || (pbCache[ck] = pbFetch(s, t, sites, hrs).catch(e => { delete pbCache[ck]; throw e; }))); } catch (e) {} }));
     if (!list.some(s => data[s.id + t])) throw new Error(ens ? "no ensemble members for this hour" : "no blend sources for this hour");
     const v = TS_BLEND[pid](pbEval(0, [t], data, ens ? list : undefined)); return v == null ? null : v;
@@ -1701,7 +1809,7 @@
   const tsK2F = k => (k - 273.15) * 9 / 5 + 32;
   async function tsRec(model, t){
     if (model === "nbm") return null;
-    return model === "hrrr" ? hrrrFile(0, t) : rrfsDetFile(t);
+    return (model === "hrrr" ? hrrrFile(0, t) : rrfsDetFile(t)).then(q => { if (q.offset < 0) TS_FB[t.getTime()] = q.offset; return q; });
   }
   // value at the single nearest grid point (or null), in display units; "unl" = no ceiling / > 20,000 ft
   async function tsValue(model, pid, t, p){
@@ -1711,7 +1819,7 @@
     if (TS_PARAMS.find(x => x.id === pid).glmpOnly && model !== "glmp") throw new Error("Gridded LAMP only");
     if (model === "glmp") {
       const nm = { ws: "wspd", gust: "wgst", cig: "cig", vis: "vis", pop: "pop", sky: "sky" }[pid]; if (!nm) throw new Error("not in Gridded LAMP");
-      const L = await glmpLocalField(nm, t, true); if (!L) throw new Error("no Gridded LAMP data found (check the Model data status under Sample points & map framing)");
+      const L = await glmpLocalField(nm, t, true); if (L && L.offset < 0) TS_FB[t.getTime()] = L.offset; if (!L) throw new Error("no Gridded LAMP data found (check the Model data status under Sample points & map framing)");
       const v = area(L.field, p, tsMode(pid));
       if (pid === "cig") return v == null || v > 6096 ? "unl" : v * 3.28084; if (v == null) return null;
       return pid === "ws" || pid === "gust" ? v * 1.943844 : pid === "vis" ? v / 1609.34 : v;
@@ -1770,9 +1878,105 @@
     const lvl = up ? (v > b ? 2 : v > a ? 1 : 0) : (v < b ? 2 : v < a ? 1 : 0);
     return [{ bg: "#3a9a5b", fg: "#fff" }, { bg: "#e7b416", fg: "#1b1300" }, { bg: "#cc3d31", fg: "#fff" }][lvl];
   }
-  let tsSeq = 0;
+  /* ---- Forecast look-back (dprog/dt): every run's forecast for the selected valid time ---- */
+  const LB_ARCH = new Set(["hrrr", "rrfs", "mem", "nbmp", "nbmw", "nbmq", "refs", "mos"]);
+  const lbCache = {}; let lbSeq = 0, lbLast = "";
+  function lbList(model){
+    if (model === "nbm") return PB_SRC.filter(s => ["nbmp", "nbmw", "nbmq"].includes(s.kind));
+    if (model === "hrrr") return PB_SRC.filter(s => s.id === "hrrr0");
+    if (model === "rrfs") return PB_SRC.filter(s => s.kind === "rrfs");
+    if (model === "rrfsens") return PB_SRC.filter(s => s.kind === "rrfs" || s.kind === "mem");
+    if (model === "hrrrens") return PB_SRC.filter(s => s.kind === "hrrr");
+    return PB_SRC.filter(s => s.on && LB_ARCH.has(s.kind));
+  }
+  async function lbRender(force){
+    const out = $("lbOut"), st = $("lbState"); if (!$("lbFold").open) return;
+    const pts = parsePoints($("pts").value).pts, vt = validTime(); if (!pts.length || !vt) { out.innerHTML = '<p class="hint">Enter a sample point first.</p>'; return; }
+    { const sel = $("lbSite"), cur = sel.value, opts = pts.map((q, i) => `<option value="${i}">${esc(q.name)}</option>`).join(""); if (sel.innerHTML !== opts) { sel.innerHTML = opts; sel.value = cur && +cur < pts.length ? cur : "0"; } }
+    const p = pts[Math.min(+$("lbSite").value || 0, pts.length - 1)], pid = $("lbParam").value, model = $("lbModel").value, P = TS_PARAMS.find(x => x.id === pid);
+    const back = +$("lbBack").value, step = Math.max(+$("lbStep").value, model === "rrfsens" ? 6 : 1), V = vt.getTime();
+    const key = [p.lat, p.lon, pid, model, back, step, V, thrKt(), PB_SRC.map(s => +s.on).join("")].join("|"); if (!force && key === lbLast) return; lbLast = key;
+    const seq = ++lbSeq, list = lbList(model), plume = ["rrfsens", "hrrrens", "blend"].includes(model);
+    if (!list.length) { out.innerHTML = '<p class="hint">No sources with past runs are ticked under Point samples › Model sources.</p>'; return; }
+    const newest = floorH(Math.min(Date.now(), V - LB_H), step).getTime(), runs = [];
+    for (let c = newest; c >= Date.now() - back * LB_H - 1 && runs.length < 200; c -= step * LB_H) if (c <= V - LB_H) runs.push(c);
+    runs.reverse(); const rows = runs.map(c => ({ c, done: false }));
+    const draw = () => { if (seq === lbSeq) lbDraw(out, rows, P, p, V, plume, list, model); };
+    st.textContent = `Loading ${runs.length} runs…`; draw();
+    let k = 0, nDone = 0;
+    const worker = async () => { while (k < rows.length && seq === lbSeq) { const r = rows[k++], data = {};
+        await Promise.all(list.map(async s => { const ck = [s.id, V, r.c, p.lat, p.lon].join("|") + LIMK();
+          try { data[s.id + V] = await (lbCache[ck] || (lbCache[ck] = pbFetch(s, V, [p], [V], r.c).catch(e => { delete lbCache[ck]; throw e; }))); } catch (e) {} }));
+        r.done = true; nDone++;
+        if (list.some(s => data[s.id + V])) {
+          const e = pbEval(0, [V], data, list); r.e = e; r.v = TS_BLEND[pid](e);
+          const kk = pid === "cig" ? "cr" : pid === "vis" ? "vr" : "w", pairs = [], bySrc = [];
+          for (const s of list) { const d = data[s.id + V]; if (!d) continue; const xs = d.members.map(m => m.vals[0]?.[kk]).filter(x => x != null);
+            xs.forEach(x => pairs.push([x, (srcW(s) || 1) / xs.length])); const ws = d.members.map(m => m.vals[0]?.w).filter(x => x != null);
+            if (ws.length) bySrc.push([s.label.replace(/\s*\(.*\)$/, ""), ws.reduce((a, b) => a + b, 0) / ws.length, ws.length]); }
+          r.mem = pairs.map(x => x[0]); r.bySrc = bySrc;
+          if (pairs.length >= 5) { r.p10 = wq(pairs.slice(), 0.1); r.p90 = wq(pairs.slice(), 0.9); }
+          r.cycs = [...new Set(list.map(s => data[s.id + V]?.cyc).filter(Boolean).map(c => +new Date(c)))];
+        }
+        st.textContent = nDone < rows.length ? `Loading ${nDone}/${rows.length} runs…` : `${rows.filter(r => r.e).length} of ${rows.length} runs found`; draw(); } };
+    await Promise.all([worker(), worker(), worker()]);
+  }
+  function lbDraw(out, rows, P, p, V, plume, list, model){
+    const mode = $("tsColor").value, th = [+$("tsTh1").value, +$("tsTh2").value, $("tsDir").value], ok = rows.filter(r => r.e), n = rows.length;
+    const zr = c => { const d = new Date(c); return `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCHours()).padStart(2, "0")}Z`; };
+    const name = `${P.label} (${P.unit}) · ${esc(p.name)} · valid ${zr(V)} · ${$("lbModel").selectedOptions[0].text.replace(/\s*\(.*\)$/, "").toUpperCase()}`;
+    // gridded row like the forecast time series
+    let h = `<h3>Forecast look-back: ${name}</h3><div class="sdscroll"><table class="sdt"><tr><th class="sdsite">Run</th>${rows.map(r => `<th>${zr(r.c)}<small>+${Math.round((V - r.c) / LB_H)} h</small></th>`).join("")}</tr>`
+      + `<tr><td class="sdsite">${esc(P.label)}<small>${P.unit}</small></td>${rows.map(r => { if (!r.done) return `<td class="sd pv">…</td>`; if (!r.e) return `<td class="sd na" title="no data for this run">–</td>`;
+          const c = tsColor(P, r.v, mode, th); return `<td class="sd" style="background:${c.bg};color:${c.fg}">${tsFmt(P, r.v)}</td>`; }).join("")}</tr>`
+      + (plume ? `<tr><td class="sdsite">Members<small>count</small></td>${rows.map(r => `<td class="sd pv">${r.e ? (r.mem.length || "–") : ""}</td>`).join("")}</tr>` : "") + `</table></div>`;
+    // chart
+    const Wd = 1000, Hd = 330, L = 64, R = 30, T = 14, B = Hd - 40, X = i => L + (Wd - L - R) * (n > 1 ? i / (n - 1) : 0.5);
+    const num = v => v === "unl" ? null : v, vals = ok.flatMap(r => [num(r.v), r.p90, ...(plume ? r.mem : [])]).filter(v => v != null && v < 1e5);
+    let lo = 0, hi = P.id === "vis" ? 10 : P.unit === "%" ? 100 : Math.max(P.id === "cig" ? 3500 : 10, ...vals.map(v => v * 1.08));
+    if (P.id === "ws" || P.id === "p99") hi = Math.max(hi, thrKt() + 3);
+    const Y = v => B - (B - T) * (Math.min(Math.max(v, lo), hi) - lo) / (hi - lo);
+    let svg = `<svg class="tschart" viewBox="0 0 ${Wd} ${Hd}" style="width:100%;height:auto;background:#141a22;border:1px solid var(--line);border-radius:6px;cursor:crosshair">`;
+    for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4; svg += `<line x1="${L}" x2="${Wd - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#223040"/><text x="${L - 6}" y="${Y(v) + 4}" fill="#9fb3c8" font-size="13" text-anchor="end">${P.id === "vis" ? v.toFixed(1) : Math.round(v)}</text>`; }
+    const lab = Math.max(1, Math.ceil(n / 12)); rows.forEach((r, i) => { if (i % lab) return; svg += `<text x="${X(i)}" y="${B + 18}" fill="#9fb3c8" font-size="13" text-anchor="middle">${zr(r.c)}</text>`; });
+    svg += `<text x="${(L + Wd - R) / 2}" y="${Hd - 4}" fill="#6f8296" font-size="12" text-anchor="middle">model run (newest on the right)</text>`;
+    if (P.id === "ws" || P.id === "p99") svg += `<line x1="${L}" x2="${Wd - R}" y1="${Y(thrKt())}" y2="${Y(thrKt())}" stroke="#4aa3ff" stroke-dasharray="7 5"/><text x="${Wd - R - 4}" y="${Y(thrKt()) - 5}" fill="#4aa3ff" font-size="13" font-weight="700" text-anchor="end" stroke="#141a22" stroke-width="4" paint-order="stroke">${thrKt()} KT threshold</text>`;
+    if (P.avi) (P.avi === "cig" ? [[500, "#c03fc0", "LIFR / IFR · 500 ft"], [1000, "#d0312d", "IFR / MVFR · 1,000 ft"], [3000, "#2f6fd6", "MVFR / VFR · 3,000 ft"]] : [[1, "#c03fc0", "LIFR / IFR · 1 SM"], [3, "#d0312d", "IFR / MVFR · 3 SM"], [5, "#2f6fd6", "MVFR / VFR · 5 SM"]])
+      .forEach(([v, c, t]) => { if (v > hi) return; svg += `<line x1="${L}" x2="${Wd - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${c}" stroke-width="1.5" stroke-dasharray="6 5"/><text x="${Wd - R - 6}" y="${Y(v) - 6}" fill="${c}" font-size="14" font-weight="700" text-anchor="end" stroke="#141a22" stroke-width="4" paint-order="stroke">${t}</text>`; });
+    if (plume) { let band = ""; const seg = []; rows.forEach((r, i) => { if (r.p10 != null) seg.push([X(i), Y(r.p10), Y(r.p90)]); });
+      if (seg.length > 1) band = `<path d="M${seg.map(s => s[0] + "," + s[2]).join("L")}L${seg.slice().reverse().map(s => s[0] + "," + s[1]).join("L")}Z" fill="#8a99aa" fill-opacity=".22"/>`;
+      svg += band; rows.forEach((r, i) => { if (r.e) r.mem.forEach(v => { if (v < 1e5) svg += `<circle cx="${X(i)}" cy="${Y(v)}" r="2.4" fill="#8a99aa" fill-opacity=".6"/>`; }); });
+      if (P.id === "ws") { const d = rows.map((r, i) => r.e && r.e.p99 != null ? `${X(i)},${Y(r.e.p99)}` : null); svg += lbPath(d, `stroke="#ff5d5d" stroke-width="2" stroke-dasharray="6 4"`); } }
+    svg += lbPath(rows.map((r, i) => r.e && num(r.v) != null ? `${X(i)},${Y(num(r.v))}` : r.e && r.v === "unl" ? `${X(i)},${Y(hi)}` : null), `stroke="#fff" stroke-width="3"`);
+    rows.forEach((r, i) => { if (!r.e || r.v == null) return; const c = tsColor(P, r.v, mode, th), y = r.v === "unl" ? Y(hi) : Y(r.v);
+      svg += `<circle cx="${X(i)}" cy="${y}" r="6" fill="${c.bg}" stroke="#fff" stroke-width="1.5"/>`; if (r.v === "unl") svg += `<text x="${X(i)}" y="${y - 10}" fill="#9fb3c8" font-size="11" text-anchor="middle">UNL</text>`; });
+    svg += `<line class="pbhov" x1="0" x2="0" y1="${T}" y2="${B}" stroke="#ffd166" stroke-width="1.5" visibility="hidden"/></svg>`;
+    out.innerHTML = `<div class="lbwrap"><div>${h}${svg}</div><div class="pbread" id="lbRead"></div></div>`;
+    const sv = out.querySelector("svg.tschart"), read = out.querySelector("#lbRead");
+    const show = i => { const r = rows[i]; if (!r) return; read.innerHTML = lbReadout(r, P, V, p, plume); };
+    const last = (() => { for (let i = rows.length - 1; i >= 0; i--) if (rows[i].e) return i; return rows.length - 1; })(); show(last);
+    sv.addEventListener("mousemove", ev => { const b = sv.getBoundingClientRect(), xv = (ev.clientX - b.left) * Wd / b.width, i = Math.max(0, Math.min(n - 1, Math.round((xv - L) / ((Wd - L - R) / Math.max(1, n - 1)))));
+      const hv = sv.querySelector(".pbhov"); hv.setAttribute("x1", X(i)); hv.setAttribute("x2", X(i)); hv.setAttribute("visibility", "visible"); show(i); });
+    sv.addEventListener("mouseleave", () => { sv.querySelector(".pbhov").setAttribute("visibility", "hidden"); show(last); });
+    sv._csv = () => `run_utc,lead_h,${P.id}_${P.unit}${plume ? ",members,p10,p90" : ""}\n` + rows.map(r => [new Date(r.c).toISOString().slice(0, 13) + "Z", Math.round((V - r.c) / LB_H), r.e ? (r.v === "unl" ? "unlimited" : r.v == null ? "" : +(+r.v).toFixed(2)) : ""]
+      .concat(plume ? [r.e ? r.mem.length : "", r.p10 != null ? r.p10.toFixed(1) : "", r.p90 != null ? r.p90.toFixed(1) : ""] : []).join(",")).join("\n");
+  }
+  const lbPath = (pts, attr) => { let d = "", pen = false; pts.forEach(x => { if (!x) { pen = false; return; } d += (pen ? "L" : "M") + x; pen = true; }); return d ? `<path d="${d}" fill="none" ${attr}/>` : ""; };
+  function lbReadout(r, P, V, p, plume){
+    const d = new Date(r.c), lead = Math.round((V - r.c) / LB_H), pc = v => v == null ? "–" : v + "%", kt = v => v == null ? "–" : v.toFixed(1) + " KT";
+    let h = `<div class="pbrh"><b>${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCHours()).padStart(2, "0")}Z run</b> <small>${esc(p.name)} · +${lead} h</small></div>`;
+    if (!r.e) return h + `<p>${r.done ? "No data for this run (not posted, or older than the archive keeps)." : "Loading…"}</p>`;
+    const e = r.e, badge = e.cat == null ? "" : `<span class="pbbadge" style="background:${STAT_COL[e.cat]};color:${e.cat === 1 ? "#1b1300" : "#fff"}">${SDW_CAT[e.cat]}</span>`;
+    h += `<p style="font-size:17px;color:var(--text)">${esc(P.label)}: <b>${tsFmt(P, r.v)}${r.v == null ? "" : " " + P.unit}</b></p>${badge}`;
+    h += `<p>Wind mean ${kt(e.mean)}, 99th percentile ${kt(e.p99)}${r.p10 != null && (P.id === "ws" || P.id === "p99" || P.id === "pw") ? `, 10–90% ${r.p10.toFixed(1)}–${r.p90.toFixed(1)} KT` : ""}${plume ? ` (${r.mem.length} member values)` : ""}</p>`;
+    h += `<table>${[["Wind &gt;" + thrKt() + " KT", pc(e.pexc)], ["Precip within 10 NM", pc(e.wx.p)], ["Lightning within 10 NM", pc(e.wx.l)], ["Ceiling ≤" + cigTxt(), pc(e.wx.c)], ["Visibility ≤" + visTxt(), pc(e.wx.v)], ["Any weather", pc(e.any)],
+      ["Ceiling (median)", cvFmt("c", e.cig50)], ["Visibility (median)", cvFmt("v", e.vis50)]].map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("")}</table>`;
+    if (r.bySrc && r.bySrc.length) h += `<div class="pbrs">Mean wind by source</div><table>${r.bySrc.map(([l, v, k]) => `<tr><td>${esc(l)}${k > 1 ? ` <small>(${k})</small>` : ""}</td><td>${v.toFixed(1)} KT</td></tr>`).join("")}</table>`;
+    return h;
+  }
+  let tsSeq = 0, TS_FB = {};   // hours where a run ending early supplied its last hour instead
   async function tsRender(){
-    const vt = validTime(); if (!vt) return;
+    const vt = validTime(); if (!vt) return; TS_FB = {};
     const pts = parsePoints($("pts").value).pts, sel = $("tsSite"), cur = sel.value;
     sel.innerHTML = pts.map((p, i) => `<option value="${i}">${esc(p.name)}</option>`).join(""); if (cur && +cur < pts.length) sel.value = cur;
     const p = pts[+sel.value || 0]; if (!p) { $("tsOut").innerHTML = '<p class="hint">Enter at least one point.</p>'; return; }
@@ -1817,6 +2021,7 @@
       hrs.forEach((t, i) => { const dt = new Date(t); svg += `<text x="${X(i)}" y="${Hd - B + 22}" fill="#9fb3c8" font-size="14" text-anchor="middle">${String(dt.getUTCHours()).padStart(2,"0")}Z</text>`; });
       if (unl) svg += `<text x="${Wd - R}" y="${T + 14}" fill="#9fb3c8" font-size="13" text-anchor="end">points at top = unlimited</text>`;
       svg += `<text x="${L}" y="${Hd - 6}" fill="#9fb3c8" font-size="14">${esc(P.label)} (${unitTxt}); white line = selected valid time</text></svg>`;
+      const fbh = hrs.filter(t => TS_FB[t]); if (fbh.length) h += `<p class="hint fbtag" style="font-size:16px">⚠ ${fbh.map(t => { const d = new Date(t); return String(d.getUTCHours()).padStart(2, "0") + "Z"; }).join(", ")}: past the end of the model run, so its last available hour (up to 3 h earlier) is shown.</p>`;
       $("tsOut").innerHTML = h + svg;
       const sv = $("tsOut").querySelector("svg.tschart"); if (sv) sv._csv = () => `valid_utc,${P.id}_${P.unit}\n` + hrs.map((t, i) => new Date(t).toISOString().slice(0, 13) + "Z," + (vals[i] == null ? "" : vals[i] === "unl" ? "unlimited" : typeof vals[i] === "number" ? +vals[i].toFixed(3) : "")).join("\n");
     };
@@ -1842,18 +2047,25 @@
     $("pbSrc").querySelectorAll("button[data-all]").forEach(b => b.addEventListener("click", () => { PB_SRC.forEach(s => s.on = b.dataset.all === "1"); pbSave(); }));
     $("pbSrc").querySelectorAll("button[data-grp]").forEach(b => b.addEventListener("click", () => { PB_SRC.forEach(s => { if (s.group === b.dataset.grp) s.on = b.dataset.v === "1"; }); pbSave(); }));
     const data = {};
-    const LEGEND = `<div class="sdleg"><span><i class="s"></i>Wind GO, or weather under 20%</span><span><i class="m"></i>Wind assessment required, or weather 20–50%</span><span><i class="v"></i>Wind NO-GO, or weather over 50%</span><span><i class="fvfr"></i>VFR</span><span><i class="fmvfr"></i>MVFR</span><span><i class="fifr"></i>IFR</span><span><i class="flifr"></i>LIFR</span><span><i class="m si"></i>Ceiling stand-in</span></div>`;
+    const grad = sc => GSCALE[sc].bins.filter(b => b[1]).map(b => `<i style="background:${b[1]};width:10px;height:12px;display:inline-block;margin:0"></i>`).join("");
+    const LEGEND = `<div class="sdleg"><span><i class="s"></i>Wind GO, or weather under 20%</span><span><i class="m"></i>Wind assessment required, or weather 20–50%</span><span><i class="v"></i>Wind NO-GO, or weather over 50%</span><span><i class="fvfr"></i>VFR</span><span><i class="fmvfr"></i>MVFR</span><span><i class="fifr"></i>IFR</span><span><i class="flifr"></i>LIFR</span><span><i class="m si"></i>Ceiling stand-in</span><span>Ceiling / visibility chances ${grad("wprob")}</span></div>`;
+    const LEGEND_IMG = `<div class="sdleg"><span>Wind status: <i class="s"></i>GO <i class="m"></i>ASSESS <i class="v"></i>NO-GO</span><span>Mean wind ${grad("wind")}</span><span>Precip / lightning ${grad("pop")}</span><span>Wind, ceiling, visibility &amp; any-weather chances ${grad("wprob")}</span><span><i class="fvfr"></i>VFR</span><span><i class="fmvfr"></i>MVFR</span><span><i class="fifr"></i>IFR</span><span><i class="flifr"></i>LIFR</span></div>`;
     const draw = () => {
       if (seq !== pbSeq) return;
       const table = (hs, label, tag, leg) => {
-        let h = `<h3 class="sdh">${label}: ${zH(new Date(hs[0]))} to ${zH(new Date(hs[hs.length - 1]))}</h3>${leg ? LEGEND : ""}<div class="sdscroll"><table class="sdt"><tr><th>Site</th><th>Wind</th><th>Mean / p99 (KT)</th><th>Wind<small>chance &gt;${thrKt()} KT</small></th><th>Precip<small>≤10 NM</small></th><th>Lightning<small>≤10 NM</small></th><th>Ceiling<small>chance ≤500 ft</small></th><th>Ceiling<small>median of members</small></th><th>Visibility<small>chance ≤1 NM</small></th><th>Visibility<small>median of members</small></th><th>Any weather</th></tr>`;
-        sites.forEach((p, si) => { const e = pbEval(si, hs, data), cell = (c, t) => `<td class="sd ${c}">${t}</td>`, wx = k => `<td class="sd ${sdwW(e.wx[k])}${e.si[k] ? " si" : ""}"${e.si[k] ? ' title="Stand-in from global ensembles (cloud base from T−Td and low cloud), lower confidence"' : ""}>${e.wx[k] == null ? "–" : e.wx[k] + "%"}</td>`;
-          h += `<tr><td class="sdsite">${esc(p.name)}</td>` + cell(e.cat == null ? "na" : SDW_CC[e.cat], e.cat == null ? "–" : SDW_CAT[e.cat]) + `<td class="sd pv" title="${e.wsrc === "nbm" ? "NBM quantile-mapped wind distribution" : "Pooled members, weighted by source"}">${e.mean == null ? "–" : `${e.mean.toFixed(1)} / ${e.p99 == null ? "–" : e.p99.toFixed(1)}`}</td>` +
-            cell(sdwW(e.pexc), e.pexc == null ? "–" : e.pexc + "%") + wx("p") + wx("l") + wx("c") + `<td class="sd ${cvCat("c", e.cig50)}" title="${e.ncv[0]} member values">${cvFmt("c", e.cig50)}</td>` + wx("v") + `<td class="sd ${cvCat("v", e.vis50)}" title="${e.ncv[1]} member values">${cvFmt("v", e.vis50)}</td>` + cell(sdwW(e.any), e.any == null ? "–" : e.any + "%") + "</tr>"; });
+        let h = `<h3 class="sdh">${label}: ${zH(new Date(hs[0]))} to ${zH(new Date(hs[hs.length - 1]))}</h3>${leg ? ($("pbColor").value === "img" ? LEGEND_IMG : LEGEND) : ""}<div class="sdscroll"><table class="sdt"><tr><th>Site</th><th>Wind</th><th>Mean / p99 (KT)</th><th>Wind<small>chance &gt;${thrKt()} KT</small></th><th>Precip<small>≤10 NM</small></th><th>Lightning<small>≤10 NM</small></th><th>Ceiling<small>chance ≤${cigTxt()}</small></th><th>Ceiling<small>median of members</small></th><th>Visibility<small>chance ≤${visTxt()}</small></th><th>Visibility<small>median of members</small></th><th>Any weather</th></tr>`;
+        const img = $("pbColor").value === "img", pct = v => v == null ? "–" : v + "%";
+        sites.forEach((p, si) => { const e = pbEval(si, hs, data), cell = (c, t) => `<td class="sd ${c}">${t}</td>`,
+          sit = k => e.si[k] ? ' title="Stand-in from global ensembles (cloud base from T−Td and low cloud), lower confidence"' : "",
+          wx = k => (k === "c" || k === "v") ? scaleCell("wprob", e.wx[k], pct(e.wx[k]), sit(k)).replace('class="sd', `class="sd${e.si[k] ? " si" : ""}`)
+                  : img ? scaleCell(k === "p" || k === "l" ? "pop" : "wprob", e.wx[k], pct(e.wx[k]), sit(k)) : wx0(k), wx0 = k => `<td class="sd ${sdwW(e.wx[k])}${e.si[k] ? " si" : ""}"${e.si[k] ? ' title="Stand-in from global ensembles (cloud base from T−Td and low cloud), lower confidence"' : ""}>${e.wx[k] == null ? "–" : e.wx[k] + "%"}</td>`;
+          h += `<tr><td class="sdsite">${esc(p.name)}</td>` + cell(e.cat == null ? "na" : SDW_CC[e.cat], e.cat == null ? "–" : SDW_CAT[e.cat]) + (img ? scaleCell("wind", e.mean, e.mean == null ? "–" : `${e.mean.toFixed(1)} / ${e.p99 == null ? "–" : e.p99.toFixed(1)}`, ` title="${e.wsrc === "nbm" ? "NBM quantile-mapped wind distribution" : "Pooled members, weighted by source"} · coloured by the mean"`)
+                 : `<td class="sd pv" title="${e.wsrc === "nbm" ? "NBM quantile-mapped wind distribution" : "Pooled members, weighted by source"}">${e.mean == null ? "–" : `${e.mean.toFixed(1)} / ${e.p99 == null ? "–" : e.p99.toFixed(1)}`}</td>`) +
+            (img ? scaleCell("wprob", e.pexc, pct(e.pexc)) : cell(sdwW(e.pexc), pct(e.pexc))) + wx("p") + wx("l") + wx("c") + `<td class="sd ${cvCat("c", e.cig50)}" title="${e.ncv[0]} member values">${cvFmt("c", e.cig50)}</td>` + wx("v") + `<td class="sd ${cvCat("v", e.vis50)}" title="${e.ncv[1]} member values">${cvFmt("v", e.vis50)}</td>` + (img ? scaleCell("wprob", e.any, pct(e.any)) : cell(sdwW(e.any), pct(e.any))) + "</tr>"; });
         return h + "</table></div>";
       };
       box.innerHTML = table([v0, v0 + H1], "Valid time to +1 h", "p1") + table(hrs, "Valid time ±1 h (3 h)", "pm1", true) +
-        `<details class="howto"><summary>How this is made</summary><p class="hint">Ceiling and visibility chances use ceiling ≤ 500 ft and visibility ≤ 1 NM. Model runs and members count directly against those limits; NBM, RRFS-ensemble and Gridded LAMP only publish visibility probabilities at fixed thresholds (1 SM, then 2 SM, 3200 m or 3 SM), so the ≤ 1 NM chance is interpolated between the two nearest; MOS visibility category 3 (1 to 2 SM) counts as 20%. Built on this page from the same model set as Splashdown Weather, each queried live from its public source: HRRR time-lagged (NOAA AWS), RRFS deterministic and members in place of the retired HREF/NAM, NBM probabilities and wind, REFS and Gridded LAMP ceiling/visibility probabilities, GFS MOS and LAMP at the nearest coastal station (Iowa Environmental Mesonet), and the ECMWF, AIFS, GEFS, ICON and GEM ensembles (Open-Meteo). Gridded fields are sampled within 10 NM (wind: area mean; precip and lightning: anywhere within 10 NM; ceiling and visibility: area mean); MOS and Open-Meteo are point values. Hi-res precip = 1 km reflectivity ≥ 20 dBZ (HRRR) or 1-h precip > 0.01 in; lightning = explicit lightning output and NBM thunder only. Where no direct ceiling source covers the hours, the ceiling chance falls back to a global-ensemble stand-in (cloud base ≈ 125 m per °C of T−Td at or below 500 ft with ≥70% low cloud), hatched. Each value is the average over the table's hours. Wind, each hour: when NBM is the only wind source switched on, the mean, 99th percentile and chance of exceeding the threshold come straight from NBM's own quantile-mapped wind distribution; otherwise every member's 10 m wind at the site is pooled, with each source's weight split across its members, giving a weighted mean, weighted 99th percentile and the weighted share of members above the threshold (with fewer than 5 members the 99th percentile uses NBM's value if loaded). Mean and 99th percentile are looked up in the failure-risk table. Weather: share of each source's members meeting the condition (probabilities used directly), weight-averaged across sources, rounded to 5%. Ceiling and visibility values: the 50th percentile (weighted median) of every selected member's value at the site (each member averaged over the grid points within 10 NM) across the table's hours, with each source's weight split across its members. Members come from HRRR, RRFS, NBM and Gridded LAMP's own ceiling and visibility, the NWS Forecast, and GFS MOS / LAMP categories (category middle). The values are METAR-rounded and coloured by flight category; hover a cell for the number of member values.</p></details>`;
+        `<details class="howto"><summary>How this is made</summary><p class="hint">Ceiling and visibility chances use ceiling ≤ ${cigTxt()} and visibility ≤ ${visTxt()} (set next to the wind threshold at the top). Probability products count only where they carry that limit (ceiling: within 5%; visibility: between their thresholds); otherwise the source's own ceiling or visibility counts, and MOS / LAMP categories that straddle the limit count in proportion. Model runs and members count directly against those limits; NBM, RRFS-ensemble and Gridded LAMP only publish visibility probabilities at fixed thresholds (1 SM, then 2 SM, 3200 m or 3 SM), so the ≤ 1 NM chance is interpolated between the two nearest; MOS visibility category 3 (1 to 2 SM) counts as 20%. Built on this page from the same model set as Splashdown Weather, each queried live from its public source: HRRR time-lagged (NOAA AWS), RRFS deterministic and members in place of the retired HREF/NAM, NBM probabilities and wind, REFS and Gridded LAMP ceiling/visibility probabilities, GFS MOS and LAMP at the nearest coastal station (Iowa Environmental Mesonet), and the ECMWF, AIFS, GEFS, ICON and GEM ensembles (Open-Meteo). Gridded fields are sampled within 10 NM (wind: area mean; precip and lightning: anywhere within 10 NM; ceiling and visibility: area mean); MOS and Open-Meteo are point values. Hi-res precip = 1 km reflectivity ≥ 20 dBZ (HRRR) or 1-h precip > 0.01 in; lightning = explicit lightning output and NBM thunder only. Where no direct ceiling source covers the hours, the ceiling chance falls back to a global-ensemble stand-in (cloud base ≈ 125 m per °C of T−Td at or below 500 ft with ≥70% low cloud), hatched. Each value is the average over the table's hours. Wind, each hour: when NBM is the only wind source switched on, the mean, 99th percentile and chance of exceeding the threshold come straight from NBM's own quantile-mapped wind distribution; otherwise every member's 10 m wind at the site is pooled, with each source's weight split across its members, giving a weighted mean, weighted 99th percentile and the weighted share of members above the threshold (with fewer than 5 members the 99th percentile uses NBM's value if loaded). Mean and 99th percentile are looked up in the failure-risk table. Weather: share of each source's members meeting the condition (probabilities used directly), weight-averaged across sources, rounded to 5%. Ceiling and visibility values: the 50th percentile (weighted median) of every selected member's value at the site (each member averaged over the grid points within 10 NM) across the table's hours, with each source's weight split across its members. Members come from HRRR, RRFS, NBM and Gridded LAMP's own ceiling and visibility, the NWS Forecast, and GFS MOS / LAMP categories (category middle). The values are METAR-rounded and coloured by flight category; hover a cell for the number of member values.</p></details>`;
     };
     draw();
     pbGrid(sites, vt, data);
@@ -1862,14 +2074,14 @@
       pbStat[s.id] = "loading"; const chip = () => { const c = document.querySelector(`[data-stat="${s.id}"]`); if (c) { c.textContent = pbStat[s.id]; c.title = pbStat[s.id]; c.className = "chip " + (/^ok/.test(pbStat[s.id]) ? "ok" : /loading/.test(pbStat[s.id]) ? "partial" : "error"); } };
       chip();
       jobs.push((async () => {
-        let ok = 0, err = "", cyc = null, note = "";
+        let ok = 0, err = "", cyc = null, note = "", fb = 0;
         for (const t of hrs) {
-          const ck = s.id + t + key;
+          const ck = s.id + t + key + LIMK();
           try { const r = await (pbCache[ck] || (pbCache[ck] = pbFetch(s, t, sites, hrs).catch(e => { delete pbCache[ck]; throw e; })));
-            data[s.id + t] = r; ok++; cyc = r.cyc; if (r.note) note = r.note; } catch (e) { err = e.message; }
+            data[s.id + t] = r; ok++; cyc = r.cyc; if (r.note) note = r.note; if (r.off < 0) fb = Math.min(fb, r.off); } catch (e) { err = e.message; }
           if (seq !== pbSeq) return; draw();
         }
-        pbStat[s.id] = ok ? `ok${cyc ? " · " + String(cyc.getUTCHours()).padStart(2,"0") + "Z run" : ""}${ok < hrs.length ? ` · ${ok}/${hrs.length} h` : ""}${note ? " · " + note : ""}` : (err || "no data"); chip();
+        pbStat[s.id] = ok ? `ok${cyc ? " · " + String(cyc.getUTCHours()).padStart(2,"0") + "Z run" : ""}${ok < hrs.length ? ` · ${ok}/${hrs.length} h` : ""}${note ? " · " + note : ""}${fb ? ` · ⚠ run ends early: last hour used (up to ${fb} h)` : ""}` : (err || "no data"); chip();
       })());
     }
     await Promise.all(jobs); if (seq === pbSeq) { lastPull = Date.now(); updateNotices(); draw(); pbGrid(sites, vt, data); PB_SRC.forEach(s => { const c = document.querySelector(`[data-stat="${s.id}"]`); if (c && s.on) { c.textContent = pbStat[s.id]; c.title = pbStat[s.id]; c.className = "chip " + (/^ok/.test(pbStat[s.id]) ? "ok" : "error"); } }); }
@@ -1914,7 +2126,7 @@
     const sites = d.sites.map((s, si) => ({ s, si })).sort((x, y) => rank(x.s) - rank(y.s));
     const table = (t0, t1, label, key) => {
       let h = `<h3 class="sdh">${label}: ${zH(new Date(t0 * 1000))} to ${zH(new Date(t1 * 1000))}</h3>
-      <div class="sdscroll"><table class="sdt"><tr><th>Site</th><th>Wind</th><th>Mean / p99 (KT)</th><th>Precip<small>≤10 NM</small></th><th>Lightning<small>≤10 NM</small></th><th>Ceiling<small>chance ≤500 ft</small></th><th>Ceiling<small>NBM, lowest ≤10 NM</small></th><th>Visibility<small>chance ≤1 NM</small></th><th>Visibility<small>NBM, lowest ≤10 NM</small></th><th>Any weather</th><th>Marine layer<small>awareness</small></th></tr>`;
+      <div class="sdscroll"><table class="sdt"><tr><th>Site</th><th>Wind</th><th>Mean / p99 (KT)</th><th>Precip<small>≤10 NM</small></th><th>Lightning<small>≤10 NM</small></th><th>Ceiling<small>chance ≤${cigTxt()}</small></th><th>Ceiling<small>NBM, lowest ≤10 NM</small></th><th>Visibility<small>chance ≤${visTxt()}</small></th><th>Visibility<small>NBM, lowest ≤10 NM</small></th><th>Any weather</th><th>Marine layer<small>awareness</small></th></tr>`;
       sites.forEach(({ s, si }) => {
         const e = sdwEval(s.id, t0, t1 + H1);
         const cC = `<td class="sd pv" data-cv="${key}-c-${si}">…</td>`, cV = `<td class="sd pv" data-cv="${key}-v-${si}">…</td>`;
@@ -2021,6 +2233,16 @@
     cig:   { label: "Ceiling height AGL (FT)", bins: [[100,"#a42ba3"],[200,"#be50be"],[300,"#dc78d2"],[500,"#ff99ff"],[700,"#dc4b7d"],[1000,"#c80000"],[1500,"#dcb40a"],[2000,"#ffff00"],[3000,"#ffff64"],[5000,"#ffffc8"],[7000,"#646464"],[10000,"#969696"],[15000,"#afafaf"],[20000,"#c8c8c8"],[1e9,"#e1e1e1"]],
              ticks: ["100","200","300","500","700","1K","1.5K","2K","3K","5K","7K","10K","15K","20K"] }
   };
+  // a table cell coloured from one of the map colour scales; values below the first coloured bin stay plain
+  function scaleCls(scale, v){   // "@background|text" for the detail table helper, or a plain class
+    if (v == null) return "na"; const sc = GSCALE[scale]; let b = 0; while (b < sc.bins.length - 1 && v >= sc.bins[b][0]) b++;
+    const c = sc.bins[b][1]; if (!c) return "pv"; const [r, g, bl] = hexRGB(c); return "@" + c + "|" + ((0.299 * r + 0.587 * g + 0.114 * bl) > 150 ? "#111" : "#fff"); }
+  function scaleCell(scale, v, txt, extra){
+    if (v == null) return `<td class="sd na"${extra || ""}>${txt}</td>`;
+    const sc = GSCALE[scale]; let b = 0; while (b < sc.bins.length - 1 && v >= sc.bins[b][0]) b++;
+    const c = sc.bins[b][1]; if (!c) return `<td class="sd pv"${extra || ""}>${txt}</td>`;
+    const [r, g, bl] = hexRGB(c); return `<td class="sd" style="background:${c};color:${(0.299 * r + 0.587 * g + 0.114 * bl) > 150 ? "#111" : "#fff"}"${extra || ""}>${txt}</td>`;
+  }
   const hexRGB = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
   // basemap: coastlines, country and state lines (US Atlas / World Atlas TopoJSON via jsDelivr; no key)
     function topoLines(t){
@@ -2245,7 +2467,7 @@
           card.querySelector("[data-t]").textContent = F.title;
           const runZ = `${String(F.cyc.getUTCHours()).padStart(2,"0")}Z ${F.cyc.getUTCDate()} ${F.cyc.toUTCString().slice(8,11)} run`;
           card.querySelector("[data-run]").textContent = "NBM " + runZ;
-          card.querySelector("[data-meta]").textContent = `NBM ${runZ}${F.f.pre ? " · fast copy" : ""} · zoom ${prod.view.zoom}` + (F.off ? ` · nearest available hour (${F.off > 0 ? "+" : ""}${F.off} h)` : "") + (bm ? "" : " · basemap unavailable");
+          card.querySelector("[data-meta]").innerHTML = `NBM ${runZ}${F.f.pre ? " · fast copy" : ""} · zoom ${prod.view.zoom}` + fbTag(F.off, vt) + (bm ? "" : " · basemap unavailable");
           gridLabels();
         } catch (e) { if (seq === gridSeq) card.querySelector("[data-meta]").textContent = "NBM grid unavailable: " + e.message; }
       })();
@@ -2352,7 +2574,7 @@
           card.querySelector("[data-t]").textContent = F.title;
           const runZ = `${String(F.cyc.getUTCHours()).padStart(2,"0")}Z ${F.cyc.getUTCDate()} ${F.cyc.toUTCString().slice(8,11)} run`;
           card.querySelector("[data-run]").textContent = "RRFS ens " + runZ;
-          card.querySelector("[data-meta]").textContent = `RRFS ensemble (REFS) ${runZ}${F.f.pre ? " · fast copy" : ""}` + (F.off ? ` · nearest available hour (${F.off > 0 ? "+" : ""}${F.off} h)` : "");
+          card.querySelector("[data-meta]").innerHTML = `RRFS ensemble (REFS) ${runZ}${F.f.pre ? " · fast copy" : ""}` + fbTag(F.off, vt);
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, i => fieldLabel(F, pts[i]));
         } catch (e) {
           if (seq !== rrfsSeq) return;
@@ -2429,8 +2651,9 @@
   async function glmpLocalField(name, vt, exact){
     const m = await glmpLocalMetaGet(); if (!m || !m.fields[name]) return null;
     const fd = m.fields[name], cyc = new Date(m.cycle), f0 = Math.round((vt - cyc) / 3.6e6);
-    const f = (exact ? [0] : [0, 1, -1, 2, -2]).map(o => f0 + o).find(x => fd.hours.includes(x));
-    if (f == null) { if (exact) throw new Error(f0 < 1 ? "before this LAMP run" : "beyond this LAMP run"); return null; }
+    const last = Math.max(...fd.hours), ord = exact ? (f0 > last ? [-1, -2, -3] : [0]) : [0, 1, -1, 2, -2, -3];
+    const f = ord.map(o => f0 + o).find(x => fd.hours.includes(x));
+    if (f == null) { if (exact) throw new Error(f0 < 1 ? "before this LAMP run" : `more than 3 h past this LAMP run (ends ${last} h)`); return null; }
     const gz = m.enc === "gzip", url = `${glmpLocalUrl}${name}_f${String(f).padStart(3, "0")}.bin${gz ? ".gz" : ""}`;
     if (!glmpLocalBins[url]) glmpLocalBins[url] = fetch(url, { cache: "no-store" }).then(r => {
         if (!r.ok) throw new Error("HTTP " + r.status);
@@ -2473,11 +2696,12 @@
   // GLMP ceiling < 500 ft / vis < 1 mile probabilities for the point board: hourly file if it carries them, else fcsts_cigp2 / visp2
   async function glmpProbs(T){
     { const [c, v, v3, cd, vd] = await Promise.all(["cigp2", "visp2", "visp3", "cig", "vis"].map(n => glmpLocalField(n, T)));
-      if (c || v) return { c: c ? c.field : null, v: v ? v.field : null, v3: v3 ? v3.field : null, cd: cd ? cd.field : null, vd: vd ? vd.field : null, cyc: (c || v).cyc }; }
+      const c5 = Math.abs(CIG_LIM_M - 152.4) < 8;   // the pre-processed cigp2 field is P(ceiling < 500 ft)
+      if (c || v) return { c: c && c5 ? c.field : null, v: v ? v.field : null, v3: v3 ? v3.field : null, cd: cd ? cd.field : null, vd: vd ? vd.field : null, cyc: (c || v).cyc, off: (c || v).offset }; }
     const near = (x, v) => x.thr != null && Math.abs(x.thr - v) < v * 0.1;
     let qc, qv, mc, mv, mv3;
-    try { const q = await findGlmp(T); mc = pick(q.g.msgs, q.f, x => isCig(x) && isProb(x) && near(x, 152.4)); mv = pick(q.g.msgs, q.f, x => isVis(x) && isProb(x) && near(x, 1609.34)); mv3 = pick(q.g.msgs, q.f, x => isVis(x) && isProb(x) && near(x, 4828.03)); if (mc) qc = q; if (mv) qv = q; } catch (e) { if (/blocks/.test(e.message)) throw e; }
-    if (!mc) { try { qc = await findGlmp(T, "cigp2"); mc = pick(qc.g.msgs, qc.f, x => isCig(x) && Math.abs(x.fh - qc.f) < 0.5); } catch (e) {} }
+    try { const q = await findGlmp(T); mc = pick(q.g.msgs, q.f, x => isCig(x) && isProb(x) && near(x, CIG_LIM_M)); mv = pick(q.g.msgs, q.f, x => isVis(x) && isProb(x) && near(x, 1609.34)); mv3 = pick(q.g.msgs, q.f, x => isVis(x) && isProb(x) && near(x, 4828.03)); if (mc) qc = q; if (mv) qv = q; } catch (e) { if (/blocks/.test(e.message)) throw e; }
+    if (!mc) { try { qc = await findGlmp(T, "cigp2"); mc = pick(qc.g.msgs, qc.f, x => isCig(x) && Math.abs(x.fh - qc.f) < 0.5 && (x.thr == null ? Math.abs(CIG_LIM_M - 152.4) < 8 : near(x, CIG_LIM_M))); } catch (e) {} }
     if (!mv) { try { qv = await findGlmp(T, "visp2"); mv = pick(qv.g.msgs, qv.f, x => isVis(x) && Math.abs(x.fh - qv.f) < 0.5); } catch (e) {} }
     if (!mc && !mv) throw new Error("no GLMP ceiling/visibility probabilities for this hour");
     return { c: mc ? glmpField(qc.g, mc) : null, v: mv ? glmpField(qv.g, mv) : null, v3: mv3 && qv ? glmpField(qv.g, mv3) : null, cyc: (qc || qv).cyc };
@@ -2502,7 +2726,7 @@
           await drawGrid(card.querySelector("canvas"), prod.view, W, H, F, bm);
           card.querySelector("[data-t]").textContent = F.title;
           const runZ = `${String(F.cyc.getUTCHours()).padStart(2,"0")}${String(F.cyc.getUTCMinutes()).padStart(2,"0")}Z ${F.cyc.getUTCDate()} ${F.cyc.toUTCString().slice(8,11)} run`;
-          card.querySelector("[data-run]").textContent = "GLMP " + runZ; card.querySelector("[data-meta]").textContent = "Gridded LAMP " + runZ;
+          card.querySelector("[data-run]").textContent = "GLMP " + runZ; card.querySelector("[data-meta]").innerHTML = "Gridded LAMP " + runZ + fbTag(F.off, vt);
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, i => fieldLabel(F, pts[i]));
         } catch (e) {
           if (seq !== glmpSeq) return;
@@ -2704,7 +2928,9 @@
     {
       const sc = $("synCards"); sc.innerHTML = "";
       const fr = wpcFrames().sort((a, b) => a.valid - b.valid);
-      const bi = fr.reduce((b, f, i) => Math.abs(f.valid - vt) < Math.abs(fr[b].valid - vt) ? i : b, 0);
+      // primary frame: the one nearest the valid time on the selected UTC day (nearest overall only if that day has none)
+      const day = vt.toISOString().slice(0, 10), sameDay = fr.map((f, i) => i).filter(i => fr[i].valid.toISOString().slice(0, 10) === day);
+      const bi = (sameDay.length ? sameDay : fr.map((f, i) => i)).reduce((b, i) => Math.abs(fr[i].valid - vt) < Math.abs(fr[b].valid - vt) ? i : b, (sameDay.length ? sameDay : [0])[0]);
       const pick = fr.slice(Math.max(0, bi - 1), bi + 3), DW = 460;
       pick.forEach(f => {
         const cur = f === fr[bi], c = document.createElement("section"), dh = Math.round((f.valid - vt) / 3.6e6);
@@ -2959,7 +3185,7 @@
       anchor.after(bar);
     });
   }
-  ["pbBody", "pbGrid", "tsOut"].forEach(id => { const n = document.getElementById(id); if (!n) return; let tm;
+  ["pbBody", "pbGrid", "tsOut", "lbOut"].forEach(id => { const n = document.getElementById(id); if (!n) return; let tm;
     new MutationObserver(() => { clearTimeout(tm); tm = setTimeout(() => addExportBars(n), 60); }).observe(n, { childList: true, subtree: true }); });
   function copyTables(ids, title, btn){
     const parts = [title];
@@ -2986,6 +3212,18 @@
   $("autoData").addEventListener("change", () => store.set("autoData", $("autoData").checked ? "1" : "0"));
   const rerender = () => { clearTimeout(deb); deb = setTimeout(() => render(!$("autoImages").checked), 500); };
   ["validDate","validHour","padding","padRight","padTop","padBottom","zoomOverride","windThr"].forEach(id => $(id).addEventListener("change", rerender));
+  // ceiling / visibility limits for the weather chances (default 500 ft and 1 NM); remembered per browser
+  function applyLims(){
+    CIG_LIM_FT = +$("cigThr").value || 500; CIG_LIM_M = CIG_LIM_FT * 0.3048; VIS_LIM_M = +$("visThr").value || 1852;
+    SDW_WX[2].sub = "≤" + cigTxt(); SDW_WX[3].sub = "≤" + visTxt();
+    const tc = TS_PARAMS.find(x => x.id === "cigp"), tv = TS_PARAMS.find(x => x.id === "visp");
+    if (tc) tc.label = "Chance of ceiling ≤ " + cigTxt(); if (tv) tv.label = "Chance of visibility ≤ " + visTxt();
+    ["tsParam", "lbParam"].forEach(sel => { const el = $(sel); if (!el) return; [...el.options].forEach(o => { const P = o.value === "cigp" ? tc : o.value === "visp" ? tv : null; if (P) o.textContent = o.textContent.replace(/^Chance of (ceiling|visibility) ≤ [^(]*?(?=\s*\(|$)/, P.label); }); });
+    store.set("cvLims", { c: CIG_LIM_FT, v: VIS_LIM_M });
+  }
+  { const sv = store.get("cvLims", null); if (sv) { if ([...$("cigThr").options].some(o => +o.value === sv.c)) $("cigThr").value = sv.c; if ([...$("visThr").options].some(o => +o.value === sv.v)) $("visThr").value = sv.v; } }
+  applyLims();
+  ["cigThr", "visThr"].forEach(id => $(id).addEventListener("change", () => { applyLims(); pbRender(); if ($("tab-ts").style.display !== "none") { tsRender(); lbSoon(); } }));
   ["validDate","validHour","pts","windThr"].forEach(id => $(id).addEventListener("change", () => pbRender()));
   $("pts").addEventListener("input", rerender);
   $("csvFile").addEventListener("change", e => {
@@ -3034,10 +3272,10 @@
     const gMax = lamp && lamp.fields ? Math.max(38, ...Object.values(lamp.fields).map(f => Math.max(0, ...(f.hours || [])))) : 38;
     [["rrfs", "RRFS ensemble", rRun, 60], ["glmp", "Gridded LAMP", gRun, gMax]].forEach(([tab, nm, run, max]) => {
       const b = document.querySelector(`.tab[data-tab="${tab}"]`); if (!b) return;
-      const lead = Math.round((vt - run) / H), off = lead > max;
+      const lead = Math.round((vt - run) / H), off = lead > max + 3;
       b.classList.toggle("tabdis", off); b.setAttribute("aria-disabled", off ? "true" : "false");
-      b.title = off ? `No data available for the time selected. ${nm} (${zrun(run)} run) goes out ${max} hours; the selected time is ${lead} hours after that run.`
-                    : `${nm}: ${zrun(run)} run, selected time is +${Math.max(0, lead)} h of ${max} h`;
+      b.title = off ? `No data available for the time selected. ${nm} (${zrun(run)} run) goes out ${max} hours (plus 3 h using its last hour); the selected time is ${lead} hours after that run.`
+                    : lead > max ? `${nm}: ${zrun(run)} run ends at ${max} h; the selected time is +${lead} h, so the run's last hour is shown (labelled on each map)` : `${nm}: ${zrun(run)} run, selected time is +${Math.max(0, lead)} h of ${max} h`;
       if (off && b.classList.contains("active")) document.querySelector('.tab[data-tab="samples"]').click();
     });
   }
@@ -3055,7 +3293,7 @@
     $("tab-glmp").style.display = b.dataset.tab === "glmp" ? "" : "none";
     $("tab-ts").style.display = b.dataset.tab === "ts" ? "" : "none";
     $("imgBar").style.display = ["synoptic", "grid", "rrfs", "glmp"].includes(b.dataset.tab) ? "" : "none";
-    if (b.dataset.tab === "ts") tsRender();
+    if (b.dataset.tab === "ts") { tsRender(); lbRender(); }
     document.body.classList.toggle("on-ecmwf", b.dataset.tab === "ecmwf");
   }));
   document.addEventListener("keydown", e => { if (e.key !== "Escape") return;   });
@@ -3066,6 +3304,15 @@
   $("tsParam").addEventListener("change", () => { tsDefaults(); const P = TS_PARAMS.find(x => x.id === $("tsParam").value); if (P.avi) $("tsColor").value = "avi"; else if ($("tsColor").value === "avi") $("tsColor").value = "image"; tsRender(); });
   ["tsSite","tsModel","tsBefore","tsAfter","tsColor","tsTh1","tsTh2","tsDir"].forEach(id => $(id).addEventListener("change", tsRender));
   $("btnTs").addEventListener("click", tsRender);
+  try { $("pbColor").value = store.get("pbColor", "go"); } catch (e) {}
+  $("pbColor").addEventListener("change", () => { store.set("pbColor", $("pbColor").value); pbRender(); });
+  // forecast look-back: runs while its section is open; parameters are the ones the pooled evaluation provides
+  $("lbParam").innerHTML = TS_PARAMS.filter(x => TS_BLEND[x.id]).map(x => `<option value="${x.id}">${esc(x.label.replace(/\s*\((NBM \/ )?blend\)/, ""))}</option>`).join("");
+  let lbDeb; const lbSoon = () => { clearTimeout(lbDeb); lbDeb = setTimeout(() => lbRender(), 500); };
+  $("lbFold").addEventListener("toggle", () => { if ($("lbFold").open) lbRender(); });
+  ["lbSite", "lbParam", "lbModel", "lbBack", "lbStep", "tsColor", "tsTh1", "tsTh2", "tsDir"].forEach(id => $(id).addEventListener("change", lbSoon));
+  ["validDate", "validHour", "pts", "windThr"].forEach(id => $(id).addEventListener("change", () => { if ($("tab-ts").style.display !== "none") lbSoon(); }));
+  $("btnLb").addEventListener("click", () => lbRender(true));
   ["validDate","validHour","pts","windThr"].forEach(id => $(id).addEventListener("change", () => { if ($("tab-ts").style.display !== "none") tsRender(); }));
   ["validDate","validHour","pts"].forEach(id => $(id).addEventListener("change", () => dataShow()));
   // forget which runs are available (latest.json / .idx lists) so the next draw looks for newer ones; downloaded records stay cached
