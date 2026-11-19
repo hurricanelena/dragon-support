@@ -748,6 +748,7 @@
     return j * g.nx + i;
   }
   function lccIndex(g, lat, lon){
+    if (g.type === "ll") return llFast(g)(lat, lon);
     const rad = Math.PI / 180, q = Math.PI / 4;
     const p1 = g.latin1 * rad, p2 = g.latin2 * rad;
     const n = Math.abs(p1 - p2) < 1e-10 ? Math.sin(p1)
@@ -1835,6 +1836,8 @@
     { id: "vis",  label: "Visibility", unit: "SM", avi: "vis", def: [3, 1, "below"] },
     { id: "t",    label: "2 m temperature", unit: "°F", def: [50, 40, "below"] },
     { id: "td",   label: "2 m dew point", unit: "°F", def: [50, 55, "above"] },
+    { id: "seas", label: "Seas: significant wave height (GFS-Wave, any model)", unit: "FT", scale: "seas", def: [6, 8, "above"], wave: true },
+    { id: "wper", label: "Primary wave period (GFS-Wave, any model)", unit: "s", def: [8, 12, "above"], wave: true },
     { id: "sky",  label: "Sky cover (Gridded LAMP)", unit: "%", scale: "pop", def: [50, 87.5, "above"], glmpOnly: true },
     { id: "p99",  label: "10 m wind, 99th percentile", unit: "KT", scale: "wind", def: [11.5, 16, "above"], blendOnly: true },
     { id: "cigp", label: "Chance of ceiling ≤ 500 ft", unit: "%", scale: "pop", def: [20, 50, "above"], blendOnly: true },
@@ -1859,6 +1862,11 @@
   }
   // value at the single nearest grid point (or null), in display units; "unl" = no ceiling / > 20,000 ft
   async function tsValue(model, pid, t, p){
+    if (TS_PARAMS.find(x => x.id === pid).wave) {     // seas: GFS-Wave whichever model is chosen (no other model here has waves)
+      const { fh, fp, q } = await waveFields(t); if (q.offset) TS_FB[t.getTime()] = q.offset;
+      const f = pid === "seas" ? fh : fp; if (!f) throw new Error("no wave period in the wave files");
+      const v = area(f, p, "mean"); return v == null ? null : pid === "seas" ? v * 3.28084 : v;
+    }
     if (model === "blend") { if (!TS_BLEND[pid]) throw new Error("not in blend"); return tsBlend(pid, t.getTime(), p); }
     if (TS_ENS[model]) { if (!TS_BLEND[pid]) throw new Error("not in the ensemble members"); return tsBlend(pid, t.getTime(), p, model); }
     if (TS_PARAMS.find(x => x.id === pid).blendOnly) throw new Error("blend only");
@@ -1905,6 +1913,7 @@
     if (P.id === "vis") { if (v > 10) return "10+"; const q = VSM_TS.reduce((b, x) => Math.abs(x - v) < Math.abs(b - v) ? x : b, 0); const w = Math.floor(q + 1e-9), r = Math.round((q - w) * 16);
       if (!r) return String(w); let n = r, d = 16; while (n % 2 === 0) { n /= 2; d /= 2; } return (w ? w + " " : "") + n + "/" + d; }
     if (P.id === "qpf") return v.toFixed(2);
+    if (P.id === "seas") return v.toFixed(1);
     return String(Math.round(v));
   }
   function tsColor(P, v, mode, th){
@@ -2036,7 +2045,7 @@
     const vals = hrs.map(() => undefined), seq = ++tsSeq;
     const draw = () => {
       if (seq !== tsSeq) return;
-      const unitTxt = P.unit, name = `${P.label} (${unitTxt}) · ${esc(p.name)} · ${({ blend: "MODEL BLEND", rrfsens: "RRFS ENSEMBLE", hrrrens: "HRRR ENSEMBLE" })[model] || model.toUpperCase()}`;
+      const unitTxt = P.unit, name = `${P.label} (${unitTxt}) · ${esc(p.name)} · ${P.wave ? "GFS-WAVE" : ({ blend: "MODEL BLEND", rrfsens: "RRFS ENSEMBLE", hrrrens: "HRRR ENSEMBLE" })[model] || model.toUpperCase()}`;
       // gridded chart
       let h = `<h3 class="sdh">${name}</h3><div class="sdscroll"><table class="sdt"><tr><th></th>${hrs.map(t => { const d = new Date(t); return `<th class="${t === v0 ? "selh" : ""}">${d.getUTCDate()}/${String(d.getUTCHours()).padStart(2,"0")}Z</th>`; }).join("")}</tr>`;
       h += `<tr><td class="sdsite">${esc(P.label)}<small>${unitTxt}</small></td>` + vals.map((v, i) => { const c = v === undefined ? { bg: "#2a3644", fg: "var(--muted)" } : tsColor(P, v, mode, th);
@@ -2067,7 +2076,7 @@
       hrs.forEach((t, i) => { const dt = new Date(t); svg += `<text x="${X(i)}" y="${Hd - B + 22}" fill="#9fb3c8" font-size="14" text-anchor="middle">${String(dt.getUTCHours()).padStart(2,"0")}Z</text>`; });
       if (unl) svg += `<text x="${Wd - R}" y="${T + 14}" fill="#9fb3c8" font-size="13" text-anchor="end">points at top = unlimited</text>`;
       svg += `<text x="${L}" y="${Hd - 6}" fill="#9fb3c8" font-size="14">${esc(P.label)} (${unitTxt}); white line = selected valid time</text></svg>`;
-      const fbh = hrs.filter(t => TS_FB[t]); if (fbh.length) h += `<p class="hint fbtag" style="font-size:16px">⚠ ${fbh.map(t => { const d = new Date(t); return String(d.getUTCHours()).padStart(2, "0") + "Z"; }).join(", ")}: past the end of the model run, so its last available hour (up to 3 h earlier) is shown.</p>`;
+      const fbh = hrs.filter(t => TS_FB[t]); if (fbh.length) h += `<p class="hint fbtag" style="font-size:16px">⚠ ${fbh.map(t => { const d = new Date(t); return String(d.getUTCHours()).padStart(2, "0") + "Z"; }).join(", ")}: ${fbh.every(t => TS_FB[t] < 0) ? "past the end of the model run, so its last available hour (up to 3 h earlier) is shown" : "no model output at that exact hour, so the nearest available hour (within 3 h) is shown"}.</p>`;
       $("tsOut").innerHTML = h + svg;
       const sv = $("tsOut").querySelector("svg.tschart"); if (sv) sv._csv = () => `valid_utc,${P.id}_${P.unit}\n` + hrs.map((t, i) => new Date(t).toISOString().slice(0, 13) + "Z," + (vals[i] == null ? "" : vals[i] === "unl" ? "unlimited" : typeof vals[i] === "number" ? +vals[i].toFixed(3) : "")).join("\n");
     };
@@ -2230,10 +2239,10 @@
     return pts.every(p => p.lon >= lo0 + M && p.lon <= lo1 - M && p.lat >= la0 + M && p.lat <= la1 - M);
   }
   async function preIdx(model, url){ const m = await preGet(model); return m && preInside(m) && m.idx[url] ? m.idx[url] : null; }
-  const preModel = url => url.indexOf("noaa-nbm-grib2-pds") >= 0 ? "nbm" : url.indexOf("noaa-rrfs-ops-pds") >= 0 && url.indexOf("/ensprod/") >= 0 ? "refs" : null;
+  const preModel = url => url.indexOf("noaa-nbm-grib2-pds") >= 0 ? "nbm" : url.indexOf("noaa-rrfs-ops-pds") >= 0 && url.indexOf("/ensprod/") >= 0 ? "refs" : url.indexOf("noaa-gfs-bdp-pds") >= 0 && url.indexOf("/wave/") >= 0 ? "wave" : null;
   async function preField(url, rec){
     const model = preModel(url); if (!model) return null;
-    const m = await preGet(model); if (!m || !preInside(m)) return null;
+    const m = await preGet(model); if (!m || !(m.full || preInside(m))) return null;   // wave files hold the whole grid
     const r = m.records[url + "#" + rec.start]; if (!r) return null;
     try { const res = await fetch(m.base + "r/" + r[0], { cache: "force-cache" }); if (!res.ok) return null;
       const a = new Uint16Array(await new Response(res.body.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer()), off = r[2], sc = r[3];
@@ -2257,7 +2266,15 @@
     return _fetchCache.get(key);
   }
   // fast nearest-cell lookup for a Lambert grid (constants computed once)
+  // regular lat/lon grids (GFS-Wave): fractional column/row from longitude/latitude
+  function llFast(g, frac){
+    const si = (g.scan & 0x80) ? -1 : 1, sj = (g.scan & 0x40) ? 1 : -1;
+    const ij = (la, lo) => [((si * (lo - g.lo1)) % 360 + 360) % 360 / g.di, sj * (la - g.la1) / g.dj];
+    if (frac) return ij;
+    return (la, lo) => { const [fi, fj] = ij(la, lo); return gIdx(g, Math.round(fi), Math.round(fj)); };
+  }
   function lccFast(g, frac){
+    if (g.type === "ll") return llFast(g, frac);
     const rad = Math.PI / 180, q = Math.PI / 4, p1 = g.latin1 * rad, p2 = g.latin2 * rad;
     const n = Math.abs(p1 - p2) < 1e-10 ? Math.sin(p1) : Math.log(Math.cos(p1) / Math.cos(p2)) / Math.log(Math.tan(q + p2/2) / Math.tan(q + p1/2));
     const F = Math.cos(p1) * Math.pow(Math.tan(q + p1/2), n) / n, RF = g.R * F;
@@ -2276,6 +2293,8 @@
     // bins are 5–30 mph by 5, then by 10 (bounds in KT)
     wind:  { label: "10 m wind speed (KT)", bins: [[4.345,null],[8.690,"#cfe1e6"],[13.035,"#90b9d5"],[17.380,"#62a4ab"],[21.724,"#477881"],[26.069,"#fff981"],[34.759,"#f9d10b"],[43.449,"#ec981c"],[52.139,"#d44744"],[60.828,"#a62926"],[69.518,"#671036"],[78.208,"#611539"],[86.898,"#391950"],[1e9,"#ba59ff"]],
              ticks: ["4","9","13","17","22","26","35","43","52","61","70","78","87"] },
+    seas:  { label: "Seas (FT) · white lines: wave period (s)", bins: [[1,"#0b2a5b"],[2,"#123f86"],[3,"#1b5fb3"],[4,"#2a86d1"],[5,"#3fb0d8"],[6,"#5fd0b8"],[8,"#8fe07a"],[10,"#d8ea4f"],[12,"#f7c83a"],[15,"#f48b2b"],[20,"#e0452f"],[25,"#b8203f"],[1e9,"#7d1150"]],
+             ticks: ["1","2","3","4","5","6","8","10","12","15","20","25"] },
     cig:   { label: "Ceiling height AGL (FT)", bins: [[100,"#a42ba3"],[200,"#be50be"],[300,"#dc78d2"],[500,"#ff99ff"],[700,"#dc4b7d"],[1000,"#c80000"],[1500,"#dcb40a"],[2000,"#ffff00"],[3000,"#ffff64"],[5000,"#ffffc8"],[7000,"#646464"],[10000,"#969696"],[15000,"#afafaf"],[20000,"#c8c8c8"],[1e9,"#e1e1e1"]],
              ticks: ["100","200","300","500","700","1K","1.5K","2K","3K","5K","7K","10K","15K","20K"] }
   };
@@ -2339,6 +2358,7 @@
 
   // records for each map, chosen the same way as the samples
   async function gridFields(prod, vt){
+    if (prod.id === "seas") return seasFields(vt);
     if (prod.id === "pop") {
       const { src, rec, hours, wEnd } = await popRecord(vt);
       if (!rec) throw new Error("no 1-h or 6-h PoP for this valid time");
@@ -2472,6 +2492,7 @@
       }
     }
     lctx.putImageData(img, 0, 0); ctx.drawImage(lay, 0, 0);
+    if (F.contour) drawContours(ctx, view, W, H, F.contour);
     // coastlines + state/country lines, then Esri place names on top
     if (base) { ctx.lineJoin = "round";
       const px = (lo, la) => [(mercX(lo) - view.cx) * s + W/2, (mercY(la) - view.cy) * s + H/2];
@@ -2492,6 +2513,79 @@
     ctx.fillStyle = "#dbe4ee"; ctx.font = `500 ${n > 12 ? 16 : 20}px ${ff}`; ctx.textAlign = "center";
     sc.ticks.forEach((t, i) => ctx.fillText(t, lx + (i + 1) * lw / n, ly + lh + 22));
   }
+  /* contour lines of a second field (e.g. wave period) over a map, by marching squares on its own grid; labelled along the lines */
+  function drawContours(ctx, view, W, H, C){
+    const g = C.f.grid, s = TILE * Math.pow(2, view.zoom), sj = (g.scan & 0x40) ? 1 : -1, si = (g.scan & 0x80) ? -1 : 1;
+    const lonOf = i => g.lo1 + si * i * g.di, latOf = j => g.la1 + sj * j * g.dj;
+    const X = i => (mercX(((lonOf(i) + 180) % 360 + 360) % 360 - 180) - view.cx) * s + W / 2, Y = j => (mercY(latOf(j)) - view.cy) * s + H / 2;
+    const val = (i, j) => { const v = C.f.valueAtIndex(gIdx(g, i, j)); return v == null ? NaN : v; };
+    // only the part of the grid on screen (plus a cell)
+    const fr = lccFast(g, true), cs = [[0, 0], [W, 0], [0, H], [W, H], [W / 2, 0], [W / 2, H], [0, H / 2], [W, H / 2]].map(([x, y]) => fr(invY(view.cy + (y - H / 2) / s), (view.cx + (x - W / 2) / s) * 360 - 180));
+    const i0 = Math.max(0, Math.floor(Math.min(...cs.map(c => c[0]))) - 1), i1 = Math.min(g.nx - 2, Math.ceil(Math.max(...cs.map(c => c[0]))) + 1);
+    const j0 = Math.max(0, Math.floor(Math.min(...cs.map(c => c[1]))) - 1), j1 = Math.min(g.ny - 2, Math.ceil(Math.max(...cs.map(c => c[1]))) + 1);
+    if (i0 > i1 || j0 > j1) return;
+    const ff = getComputedStyle(document.documentElement).getPropertyValue("--font"); ctx.save(); ctx.lineJoin = "round";
+    for (const lev of C.levels) {
+      const segs = [];
+      for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+        const a = val(i, j), b = val(i + 1, j), c = val(i + 1, j + 1), d = val(i, j + 1);
+        if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d)) continue;
+        const k = (a >= lev ? 8 : 0) | (b >= lev ? 4 : 0) | (c >= lev ? 2 : 0) | (d >= lev ? 1 : 0); if (k === 0 || k === 15) continue;
+        const t = (p, q) => (lev - p) / (q - p);
+        const e = [[i + t(a, b), j], [i + 1, j + t(b, c)], [i + t(d, c), j + 1], [i, j + t(a, d)]];     // top, right, bottom, left
+        const P = { 1: [[3, 2]], 2: [[2, 1]], 3: [[3, 1]], 4: [[0, 1]], 5: [[3, 0], [2, 1]], 6: [[0, 2]], 7: [[3, 0]], 8: [[3, 0]], 9: [[0, 2]], 10: [[0, 1], [3, 2]], 11: [[0, 1]], 12: [[3, 1]], 13: [[2, 1]], 14: [[3, 2]] }[k];
+        for (const [u, v] of P) segs.push([e[u], e[v]]);
+      }
+      if (!segs.length) continue;
+      const fx = p => X(p[0]) + (X(p[0] + 1) - X(p[0])) * 0, pxy = p => { const i = Math.floor(p[0]), j = Math.floor(p[1]), fi = p[0] - i, fj = p[1] - j;
+        return [X(i) + (X(i + 1) - X(i)) * fi, Y(j) + (Y(j + 1) - Y(j)) * fj]; };
+      ctx.strokeStyle = "rgba(10,14,20,.75)"; ctx.lineWidth = 3.2; ctx.beginPath();
+      for (const [p, q] of segs) { const [x1, y1] = pxy(p), [x2, y2] = pxy(q); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); } ctx.stroke();
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.4; ctx.stroke();
+      // a few labels per level, spread over the map
+      ctx.font = `700 15px ${ff}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      const placed = []; let n = 0;
+      for (let q = 0; q < segs.length && n < 4; q += Math.max(1, Math.floor(segs.length / 6))) {
+        const [x, y] = pxy(segs[q][0]); if (x < 30 || y < 60 || x > W - 30 || y > H - 120) continue;
+        if (placed.some(([a, b]) => Math.hypot(a - x, b - y) < 140)) continue; placed.push([x, y]); n++;
+        const txt = lev + " s", w = ctx.measureText(txt).width + 8;
+        ctx.fillStyle = "rgba(10,14,20,.8)"; ctx.fillRect(x - w / 2, y - 10, w, 20); ctx.fillStyle = "#fff"; ctx.fillText(txt, x, y + 1); }
+    }
+    ctx.restore();
+  }
+  /* Seas: GFS-Wave (WAVEWATCH III) West Coast 0.16° significant wave height, shaded, with primary wave period contours.
+     The NOAA files use JPEG 2000 packing, which a browser cannot unpack, so the page reads the pre-processed copy the
+     workflow publishes in wave/ next to the page (or at the Model data URL). */
+  async function waveFile(vt){
+    const m = await preGet("wave"); if (!m || !m.cycles || !m.cycles.wave) throw new Error("seas need the pre-processed wave files (wave/ next to the page or at the Model data URL); NOAA's wave GRIB uses JPEG 2000, which a browser cannot unpack");
+    const cyc = new Date(m.cycles.wave), f0 = Math.round((vt - cyc) / 3.6e6);
+    for (const off of [0, 1, -1, 2, -2, 3, -3]) { const f = f0 + off; if (f < 0) continue;
+      const ymd = cyc.toISOString().slice(0,10).replace(/-/g,""), hh = cyc.toISOString().slice(11,13);
+      const url = `https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.${ymd}/${hh}/wave/gridded/gfswave.t${hh}z.wcoast.0p16.f${String(f).padStart(3,"0")}.grib2`;
+      if (m.idx[url]) return { url, idx: m.idx[url], cyc, f, offset: off, validUsed: new Date(vt.getTime() + off * 3.6e6) }; }
+    throw new Error(f0 < 0 ? "selected time is before the wave run" : "no GFS-Wave hour within 3 h of the selected time");
+  }
+  async function waveFields(vt){
+    const q = await waveFile(vt), rh = idxRecord(q, l => l.indexOf(":HTSGW:surface:") >= 0), rp = idxRecord(q, l => l.indexOf(":PERPW:surface:") >= 0);
+    if (!rh) throw new Error("no wave height in the wave file");
+    const [fh, fp] = await Promise.all([cachedRange(q.url, rh), rp ? cachedRange(q.url, rp) : null]);
+    if (!fh.pre) throw new Error("wave height is not in the pre-processed files");
+    return { fh, fp: fp && fp.pre ? fp : null, q };
+  }
+  async function seasFields(vt){
+    const { fh, fp, q } = await waveFields(vt);
+    const F = { f: fh, scale: "seas", smooth: true, sigma: 0.8, conv: v => v * 3.28084, cyc: q.cyc, off: q.offset, fmt: "seas", src: "GFS-Wave",
+      title: "Seas: significant wave height (FT) with primary period contours (s) · GFS-Wave",
+      contour: fp ? { f: fp, levels: [6, 8, 10, 12, 14, 16, 18, 20] } : null };
+    // nearest wave cell, or (next to the coast, where that cell is land) the sea cells within 10 NM
+    F.labelFn = p => { const k = lccIndex(fh.grid, p.lat, p.lon); let h = k < 0 ? null : fh.valueAtIndex(k), t = k < 0 || !fp ? null : fp.valueAtIndex(k);
+      if (h == null) { h = area(fh, p, "mean"); t = fp ? area(fp, p, "mean") : null; }
+      return h == null ? "n/a (land)" : `${(h * 3.28084).toFixed(1)} FT${t == null ? "" : " · " + Math.round(t) + " s"}`; };
+    return F;
+  }
+  // the seas map is added to every gridded tab (same GFS-Wave field)
+  const withSeas = products => products.some(p => p.id === "seas") ? products : products.concat([{ id: "seas", title: "Seas: significant wave height with primary period contours", short: "Seas / period",
+    view: (products.find(p => p.id === "ws") || products[0]).view }]);
   let gridSeq = 0;
   async function gridRender(pts, vt, W, H, products){
     const seq = ++gridSeq, box = $("gridCards"); box.innerHTML = "";
@@ -2512,10 +2606,10 @@
           await drawGrid(cv, prod.view, W, H, F, bm);
           card.querySelector("[data-t]").textContent = F.title;
           const runZ = `${String(F.cyc.getUTCHours()).padStart(2,"0")}Z ${F.cyc.getUTCDate()} ${F.cyc.toUTCString().slice(8,11)} run`;
-          card.querySelector("[data-run]").textContent = "NBM " + runZ;
-          card.querySelector("[data-meta]").innerHTML = `NBM ${runZ}${F.f.pre ? " · fast copy" : ""} · zoom ${prod.view.zoom}` + fbTag(F.off, vt) + (bm ? "" : " · basemap unavailable");
-          gridLabels();
-        } catch (e) { if (seq === gridSeq) card.querySelector("[data-meta]").textContent = "NBM grid unavailable: " + e.message; }
+          card.querySelector("[data-run]").textContent = (F.src || "NBM") + " " + runZ;
+          card.querySelector("[data-meta]").innerHTML = `${F.src || "NBM"} ${runZ}${F.f.pre ? " · fast copy" : ""} · zoom ${prod.view.zoom}` + fbTag(F.off, vt) + (bm ? "" : " · basemap unavailable");
+          if (F.labelFn) card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, i => fieldLabel(F, pts[i])); else gridLabels();
+        } catch (e) { if (seq === gridSeq) card.querySelector("[data-meta]").textContent = (prod.id === "seas" ? "Seas unavailable: " : "NBM grid unavailable: ") + e.message; }
       })();
     }
     gridLabels();
@@ -2551,6 +2645,7 @@
   }
   const hasRec = (q, s) => idxRecord(q, l => l.indexOf(s) >= 0);
   async function rrfsFields(prod, vt){
+    if (prod.id === "seas") return seasFields(vt);
     const hh = d => String(d.getUTCHours()).padStart(2,"0") + "Z";
     if (prod.id === "pop") {
       for (const hrs of [1, 3, 6]) {
@@ -2591,6 +2686,7 @@
   }
   // label value straight from the drawn field: single nearest grid point
   function fieldLabel(F, p){
+    if (F.labelFn) return F.labelFn(p);
     const k = lccIndex(F.f.grid, p.lat, p.lon); if (k < 0) return "n/a";
     let v = F.f.valueAtIndex(k);
     if (v != null && F.conv) v = F.conv(v);
@@ -2643,6 +2739,7 @@
   }
   // deterministic RRFS maps (RRFS tab): same products and drawing as the REFS tab
   async function rrfsdFields(prod, vt){
+    if (prod.id === "seas") return seasFields(vt);
     const q = await rrfsDetFile(vt), cyc = q.cyc, off = q.offset, f = q.f, rec = re => idxRecord(q, l => re.test(l));
     const hh = d => String(d.getUTCHours()).padStart(2,"0") + "Z", vu = q.validUsed || vt;
     if (prod.id === "ws" || prod.id === "pw") {
@@ -2689,12 +2786,12 @@
           await drawGrid(card.querySelector("canvas"), prod.view, W, H, F, bm);
           card.querySelector("[data-t]").textContent = F.title;
           const runZ = `${String(F.cyc.getUTCHours()).padStart(2,"0")}Z ${F.cyc.getUTCDate()} ${F.cyc.toUTCString().slice(8,11)} run`;
-          card.querySelector("[data-run]").textContent = T.name + " " + runZ;
-          card.querySelector("[data-meta]").innerHTML = `${kind === "refs" ? "REFS (RRFS ensemble)" : "RRFS deterministic"} ${runZ}${F.f.pre ? " · fast copy" : ""}` + fbTag(F.off, vt);
+          card.querySelector("[data-run]").textContent = (F.src || T.name) + " " + runZ;
+          card.querySelector("[data-meta]").innerHTML = `${F.src || (kind === "refs" ? "REFS (RRFS ensemble)" : "RRFS deterministic")} ${runZ}${F.f.pre ? " · fast copy" : ""}` + fbTag(F.off, vt);
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, i => fieldLabel(F, pts[i]));
         } catch (e) {
           if (seq !== gridTabSeq[kind]) return;
-          card.querySelector("[data-meta]").textContent = T.name + " unavailable: " + e.message;
+          card.querySelector("[data-meta]").textContent = (prod.id === "seas" ? "Seas" : T.name) + " unavailable: " + e.message;
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, () => "n/a");
         }
       })();
@@ -2798,6 +2895,7 @@
     el.innerHTML = `Pre-processed GLMP: <b style="color:${col[m.status] || "#fff"}">${m.status}</b> · run ${m.cycle.slice(0, 10)} ${m.run} (${ageH.toFixed(1)} h ago${ageH > 4 ? ", <b style='color:#ffd166'>stale</b>" : ""}) · built ${m.built.slice(11, 16).replace(":", "")}Z · ${fl}${thr ? " · probability thresholds used: " + thr : ""} · <a href="${glmpLocalUrl}inventory.txt" target="_blank" style="color:var(--accent)">record list</a>`;
   }
   async function glmpFields(prod, vt){
+    if (prod.id === "seas") return seasFields(vt);
     if (prod.id === "pw") throw new Error("GLMP does not produce wind exceedance probabilities");
     { const nm = { ws: "wspd", cig: "cig", pop: "pop" }[prod.id], L = nm ? await glmpLocalField(nm, vt) : null;
       if (L) { const off = L.offset ? ` (nearest available, ${L.offset > 0 ? "+" : ""}${L.offset} h)` : "";
@@ -2851,11 +2949,11 @@
           await drawGrid(card.querySelector("canvas"), prod.view, W, H, F, bm);
           card.querySelector("[data-t]").textContent = F.title;
           const runZ = `${String(F.cyc.getUTCHours()).padStart(2,"0")}${String(F.cyc.getUTCMinutes()).padStart(2,"0")}Z ${F.cyc.getUTCDate()} ${F.cyc.toUTCString().slice(8,11)} run`;
-          card.querySelector("[data-run]").textContent = "GLMP " + runZ; card.querySelector("[data-meta]").innerHTML = "Gridded LAMP " + runZ + (F.prev ? ` <b class="fbtag">⚠ previous run: the newest run has no data for this hour</b>` : "") + fbTag(F.off, vt);
+          card.querySelector("[data-run]").textContent = (F.src || "GLMP") + " " + runZ; card.querySelector("[data-meta]").innerHTML = (F.src || "Gridded LAMP") + " " + runZ + (F.prev ? ` <b class="fbtag">⚠ previous run: the newest run has no data for this hour</b>` : "") + fbTag(F.off, vt);
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, i => fieldLabel(F, pts[i]));
         } catch (e) {
           if (seq !== glmpSeq) return;
-          card.querySelector("[data-meta]").textContent = "GLMP unavailable: " + e.message;
+          card.querySelector("[data-meta]").textContent = (prod.id === "seas" ? "Seas" : "GLMP") + " unavailable: " + e.message;
           const cv = card.querySelector("canvas"), ctx = cv.getContext("2d"); ctx.fillStyle = "#1b2028"; ctx.fillRect(0, 0, W, H);
           ctx.fillStyle = "#9fb3c8"; ctx.font = `600 22px ${getComputedStyle(document.documentElement).getPropertyValue("--font")}`; ctx.textAlign = "center"; ctx.fillText(e.message, W / 2, H / 2, W - 40);
           card.querySelector(".overlay").innerHTML = overlaySVG(pts, prod.view, W, H, () => "n/a");
@@ -3023,7 +3121,7 @@
     $("imgStale").style.display = samplesOnly ? "" : "none";
     products.forEach(p => { p.view = viewFor(p); });
 
-    if (!samplesOnly) { gridRender(pts, vt, W, H, products); rrfsRender(pts, vt, W, H, products); rrfsdRender(pts, vt, W, H, products); glmpRender(pts, vt, W, H, products); }
+    if (!samplesOnly) { const gp = withSeas(products); gridRender(pts, vt, W, H, gp); rrfsRender(pts, vt, W, H, gp); rrfsdRender(pts, vt, W, H, gp); glmpRender(pts, vt, W, H, gp); }
     renderTable(pts, vt, "sampling…");
     cigVis = { cigFt: null, visNm: null, err: "", pending: true };
     const redrawCig = () => {
@@ -3376,7 +3474,7 @@
   $("btnData").addEventListener("click", () => { store.set("glmpFiles", $("glmpFiles").value.trim()); dataReset(); dataShow(); updateNotices(); render(); });
   $("btnGlmp").addEventListener("click", () => { store.set("glmpBase", $("glmpBase").value.trim()); const vt = validTime(), pts = lastImagePts; if (!vt || !pts) return;
     const W = Number(cal.w), H = Number(cal.h), prods = buildProducts(vt); prods.forEach(p => { p.view = cal.autofit === "1" ? fitView(pts, W, H, padN("padding", 90), parseFloat($("zoomOverride").value), templateView(p.tpl).zoom) : templateView(p.tpl); });
-    glmpRender(pts, vt, W, H, prods); });
+    glmpRender(pts, vt, W, H, withSeas(prods)); });
   $("btnEcmwf").addEventListener("click", () => render(true, true));
   ["snipBanner"].forEach(id => {
     const cls = "snip-banner";
