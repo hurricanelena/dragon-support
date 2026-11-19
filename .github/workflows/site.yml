@@ -37,6 +37,9 @@ jobs:
       - name: NBM and RRFS ensemble
         continue-on-error: true
         run: python scripts/grid_build.py --out _site
+      - name: GFS-Wave seas
+        continue-on-error: true
+        run: python scripts/wave_build.py --out _site
       - name: Gridded LAMP
         continue-on-error: true
         run: python scripts/glmp_build.py --out _site/glmp
